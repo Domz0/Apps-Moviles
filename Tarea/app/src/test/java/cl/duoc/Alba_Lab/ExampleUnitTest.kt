@@ -1,4 +1,4 @@
-package cl.duoc.tarea
+package cl.duoc.Alba_Lab
 
 import org.junit.Test
 

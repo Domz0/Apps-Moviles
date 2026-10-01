@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "cl.duoc.tarea"
+    namespace = "cl.duoc.Alba_Lab"
     compileSdk = 37
 
     defaultConfig {

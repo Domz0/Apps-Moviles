@@ -1,4 +1,4 @@
-package cl.duoc.tarea.ui.theme
+package cl.duoc.Alba_Lab.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

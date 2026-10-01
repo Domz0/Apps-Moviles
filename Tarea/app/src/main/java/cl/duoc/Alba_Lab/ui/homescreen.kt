@@ -1,4 +1,4 @@
-package cl.duoc.tarea.ui.theme
+package cl.duoc.Alba_Lab.ui.theme
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +20,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
-import cl.duoc.tarea.R
+import cl.duoc.Alba_Lab.R
 
 
 

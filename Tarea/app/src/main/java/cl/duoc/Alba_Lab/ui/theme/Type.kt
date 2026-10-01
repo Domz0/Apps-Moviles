@@ -1,4 +1,4 @@
-package cl.duoc.tarea.ui.theme
+package cl.duoc.Alba_Lab.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

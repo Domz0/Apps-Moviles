@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import cl.duoc.tarea.ui.theme.HomeScreen
+import cl.duoc.tarea.ui.theme.HomeScreenPreview
 import cl.duoc.tarea.ui.theme.TareaTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,17 +21,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TareaTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                //Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    //Greeting(
+                        //name = "Android",
+                        //modifier = Modifier.padding(innerPadding)
+                    //)
+                    HomeScreen()
                 }
             }
         }
     }
-}
 
+/*
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
@@ -43,5 +46,8 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 fun GreetingPreview() {
     TareaTheme {
         Greeting("Android")
+        HomeScreenPreview()
     }
 }
+
+ */

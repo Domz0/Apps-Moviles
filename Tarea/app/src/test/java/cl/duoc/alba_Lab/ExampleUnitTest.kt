@@ -1,4 +1,4 @@
-package cl.duoc.Alba_Lab
+package cl.duoc.alba_Lab
 
 import org.junit.Test
 

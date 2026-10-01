@@ -1,4 +1,4 @@
-package cl.duoc.Alba_Lab.ui.theme
+package cl.duoc.alba_Lab.ui.theme
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -20,13 +20,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
-import cl.duoc.Alba_Lab.R
+import cl.duoc.alba_Lab.R
 
 
 
 @OptIn(ExperimentalMaterial3Api :: class)
 @Composable
-fun HomeScreen() {
+fun HomeScreenC() {
     Scaffold(topBar = { TopAppBar(title = { Text("My triple t in kotlin") } ) } )
     {
         innerPadding -> Column(
@@ -62,6 +62,6 @@ fun HomeScreen() {
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreenPreview() {
-    HomeScreen()
+fun HomeScreenCPreview() {
+    HomeScreenC()
 }

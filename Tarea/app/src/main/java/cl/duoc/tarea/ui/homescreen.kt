@@ -27,7 +27,7 @@ import cl.duoc.tarea.R
 @OptIn(ExperimentalMaterial3Api :: class)
 @Composable
 fun HomeScreen() {
-    Scaffold(topBar = { TopAppBar(title = { Text("Mi App Kotlin") } ) } )
+    Scaffold(topBar = { TopAppBar(title = { Text("My triple t in kotlin") } ) } )
     {
         innerPadding -> Column(
             modifier = Modifier

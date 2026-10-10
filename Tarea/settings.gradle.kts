@@ -22,6 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Tarea"
+rootProject.name = "AppAlba_Grupo10"
 include(":app")
- 

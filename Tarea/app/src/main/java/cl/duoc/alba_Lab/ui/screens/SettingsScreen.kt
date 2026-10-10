@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
 
+// Configuración: pantalla del ejemplo con accesos a Inicio y Perfil.
 @Composable
 fun SettingsScreen(viewModel: MainViewModel) {
     Scaffold { innerPadding ->

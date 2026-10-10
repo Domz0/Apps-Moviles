@@ -17,12 +17,23 @@ fun HomeScreen(viewModel: MainViewModel) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Menú lateral para acceder al perfil.
+    // Drawer: menú lateral con accesos al perfil y al formulario de registro.
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
                 Text("Menú", modifier = Modifier.padding(16.dp))
+                // Registro: abre el formulario de la guía 11.
+                NavigationDrawerItem(
+                    label = { Text("Registro de usuario") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.close()
+                            viewModel.navigateTo(Screen.Registro)
+                        }
+                    }
+                )
                 NavigationDrawerItem(
                     label = { Text("Ir a Perfil") },
                     selected = false,
@@ -36,12 +47,14 @@ fun HomeScreen(viewModel: MainViewModel) {
             }
         }
     ) {
-        // Estructura base de Inicio con barra superior.
+        // Scaffold: organiza la barra superior y el contenido de Inicio.
         Scaffold(
             topBar = {
+                // TopAppBar: barra superior que muestra el nombre de la aplicación.
                 TopAppBar(
                     title = { Text("Alba") },
                     navigationIcon = {
+                        // Hamburguesa: botón de tres líneas que abre el menú lateral.
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
                         }

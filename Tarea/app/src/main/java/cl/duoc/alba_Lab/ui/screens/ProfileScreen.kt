@@ -15,9 +15,10 @@ import cl.duoc.alba_Lab.viewmodel.MainViewModel
 
 @Composable
 fun ProfileScreen(viewModel: MainViewModel) {
-    // Pantalla con barra de navegación inferior.
+    // Perfil: pantalla básica con un botón para regresar a la vista anterior.
     Scaffold(
         bottomBar = {
+            // Navbar: barra inferior para navegar entre Inicio, Perfil y Configuración.
             NavigationBar {
                 NavigationBarItem(
                     selected = false,

@@ -28,7 +28,7 @@ fun HomeScreenE(modifier: Modifier = Modifier, onSettings: () -> Unit = {}) {
         Text("¡Bienvenido!", color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.headlineMedium)
         Image(
-            painter = painterResource(R.drawable.logo),
+            painter = painterResource(R.drawable.alba_logo),
             contentDescription = "Logo de Alba",
             modifier = Modifier.fillMaxWidth().height(280.dp),
             contentScale = ContentScale.Fit

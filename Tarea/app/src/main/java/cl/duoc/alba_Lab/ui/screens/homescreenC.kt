@@ -26,7 +26,7 @@ fun HomeScreenC(modifier: Modifier = Modifier, onSettings: () -> Unit = {}) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(R.drawable.logo),
+            painter = painterResource(R.drawable.alba_logo),
             contentDescription = "Logo de Alba",
             modifier = Modifier.fillMaxWidth().height(150.dp),
             contentScale = ContentScale.Fit

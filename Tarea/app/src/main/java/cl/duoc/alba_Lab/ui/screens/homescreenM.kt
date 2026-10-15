@@ -26,7 +26,7 @@ fun HomeScreenM(modifier: Modifier = Modifier, onSettings: () -> Unit = {}) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = painterResource(R.drawable.logo),
+            painter = painterResource(R.drawable.alba_logo),
             contentDescription = "Logo de Alba",
             modifier = Modifier.weight(1f).height(200.dp),
             contentScale = ContentScale.Fit

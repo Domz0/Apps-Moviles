@@ -29,7 +29,7 @@ fun RegistroScreen(navController: NavController, viewModel: UsuarioViewModel) {
                 .fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Registro de usuario", style = MaterialTheme.typography.headlineMedium)
+            Text("Quiero colaborar", style = MaterialTheme.typography.headlineMedium)
 
             // Nombre: campo obligatorio con mensaje de error debajo.
             OutlinedTextField(
@@ -66,6 +66,23 @@ fun RegistroScreen(navController: NavController, viewModel: UsuarioViewModel) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
+            //Seleccionamos el tipo de colaborador (persona o empresa)
+            Text(text = "¿Quién desea colaborar?", style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically){
+                RadioButton(selected = estado.tipoColaborador == "Persona",
+                            onClick = {
+                                viewModel.onTipoColaboradorChange("Persona")
+                            }
+                )
+                Text("Persona")
+                Spacer(modifier= Modifier.width(16.dp))
+                RadioButton(selected = estado.tipoColaborador =="Empresa",
+                            onClick = {
+                                viewModel.onTipoColaboradorChange("Empresa")
+                            }
+                )
+                Text("Empresa")
+            }
 
             // Dirección: campo obligatorio del formulario.
             OutlinedTextField(
@@ -77,10 +94,57 @@ fun RegistroScreen(navController: NavController, viewModel: UsuarioViewModel) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            //Muestro el error si llegase a faltar seleccionar una opcion
+            estado.errores.tipoColaborador?.let{mensaje -> Text(text= mensaje, color= MaterialTheme.colorScheme.error)}
+            if (estado.tipoColaborador == "Empresa"){OutlinedTextField(
+                    value = estado.empresa,
+                    onValueChange = viewModel::onEmpresaChange,
+                    label = { Text("Nombre de la empresa") },
+                    isError = estado.errores.empresa != null,
+                    supportingText = {estado.errores.empresa?.let { Text(it) }
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             // Checkbox: guarda la aceptación de términos para mostrarla en Resumen.
+            Text(text = "¿Cómo deseas colaborar?",style = MaterialTheme.typography.titleMedium)
+
+            val modalidades = listOf("Donación",
+                                     "Voluntariado",
+                                     "Alianza empresarial",
+                                     "Consulta por productos y servicios")
+
+            modalidades.forEach {opcion ->
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()) {
+                    RadioButton(selected = estado.modalidad == opcion,
+                                onClick = {viewModel.onModalidadChange(opcion) }
+                    )
+                    Text(text = opcion,
+                        modifier = Modifier.weight(1f))
+                }
+            }
+
+            estado.errores.modalidad?.let {mensaje ->
+                Text(text = mensaje,color = MaterialTheme.colorScheme.error)
+            }
+            //Mensaje de la persona interesada en donar
+            OutlinedTextField(value = estado.mensaje,
+                             onValueChange = viewModel::onMensajeChange,
+                             label = { Text("Mensaje") },
+                             placeholder = {Text("Cuéntanos cómo te gustaría colaborar")
+                },
+                isError = estado.errores.mensaje != null,
+                supportingText = {estado.errores.mensaje?.let { Text(it) }
+                },
+                minLines = 3,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(
-                    checked = estado.aceptaTerminos,
+                Checkbox(checked = estado.aceptaTerminos,
                     onCheckedChange = viewModel::onAceptarTerminosChange
                 )
                 Spacer(Modifier.width(8.dp))
@@ -96,7 +160,7 @@ fun RegistroScreen(navController: NavController, viewModel: UsuarioViewModel) {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Registrar")
+                Text("Continuar")
             }
             TextButton(onClick = { navController.popBackStack() }) { Text("Volver") }
         }

@@ -7,5 +7,11 @@ data class UsuarioUiState(
     val clave: String = "",
     val direccion: String = "",
     val aceptaTerminos: Boolean = false,
+
+    val tipoColaborador: String = "",
+    val empresa: String = "",
+    val modalidad: String = "",
+    val mensaje: String = "",
+
     val errores: UsuarioErrores = UsuarioErrores()
 )

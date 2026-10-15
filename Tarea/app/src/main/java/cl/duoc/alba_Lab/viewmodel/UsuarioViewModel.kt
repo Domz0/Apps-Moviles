@@ -37,17 +37,73 @@ class UsuarioViewModel : ViewModel() {
         _estado.update { it.copy(aceptaTerminos = valor) }
     }
 
+    //Actualizp si la colaboracion viene de empresa o persona
+    fun onTipoColaboradorChange(valor: String) {
+        _estado.update {
+            it.copy(tipoColaborador = valor,
+                    empresa= if (valor== "Persona") "" else it.empresa,
+                    errores = it.errores.copy(
+                        tipoColaborador= null,
+                        empresa= null
+                    )
+            )
+        }
+    }
+    //Actualizo el nombre de la empresa
+    fun onEmpresaChange(valor: String) {
+        _estado.update {
+            it.copy(empresa = valor,
+                    errores = it.errores.copy(empresa = null)
+            )
+        }
+    }
+    //Actualizo la modalidad de colabracion
+    fun onModalidadChange(valor: String) {
+        _estado.update {
+            it.copy(modalidad = valor,
+                    errores = it.errores.copy(modalidad = null))
+        }
+    }
+    //Actualizamos el menaje del formulario
+    fun onMensajeChange(valor: String) {
+        _estado.update{
+            it.copy(mensaje = valor,
+                    errores = it.errores.copy(mensaje = null))
+        }
+    }
+
     // Validación de la guía: campos obligatorios, correo con @ y clave de al menos 6 caracteres.
     fun validarFormulario(): Boolean {
         val estadoActual = _estado.value
         val errores = UsuarioErrores(
             nombre = if (estadoActual.nombre.isBlank()) "Campo obligatorio" else null,
-            correo = if (!estadoActual.correo.contains("@")) "Correo inválido" else null,
-            clave = if (estadoActual.clave.length < 6) "Debe tener al menos 6 caracteres" else null,
-            direccion = if (estadoActual.direccion.isBlank()) "Campo obligatorio" else null
+            correo = if (!android.util.Patterns.EMAIL_ADDRESS
+                    .matcher(estadoActual.correo.trim())
+                    .matches()
+                ) {
+                "Ingresa un correo válido"
+            }else null,
+            tipoColaborador = if(estadoActual.tipoColaborador !in listOf("Persona", "Empresa")){
+                "Selecciona persona o empresa"
+            } else null,
+            empresa = if (estadoActual.tipoColaborador == "Empresa" && estadoActual.empresa.isBlank()){
+                "Ingresa el nombre de la empresa"
+            } else null,
+            modalidad = if(
+                estadoActual.modalidad !in listOf("Donación", "Voluntariado", "Alianza empresarial",
+                    "Consulta por productos y servicios")) {
+                "Selecciona una modalidad de colaboración"
+            }else null,
+            mensaje = if (estadoActual.mensaje.isBlank()){"Escribenos cómo te gustaría colaborar"
+            }else null
         )
         val hayErrores = listOfNotNull(
-            errores.nombre, errores.correo, errores.clave, errores.direccion
+            errores.nombre,
+            errores.correo,
+            errores.tipoColaborador,
+            errores.empresa,
+            errores.modalidad,
+            errores.mensaje
         ).isNotEmpty()
         _estado.update { it.copy(errores = errores) }
         return !hayErrores

@@ -17,38 +17,37 @@ import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 fun ResumenScreen(navController: NavController, viewModel: UsuarioViewModel
 ) {
     val estado by viewModel.estado.collectAsState()
-    Scaffold { innerPadding -> Column(modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)
-                .fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(text = "Resumen de colaboración", style = MaterialTheme.typography.headlineMedium)
-            Text(text = "Revisa los datos ingresados antes de continuar.", style = MaterialTheme.typography.bodyLarge)
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(text = "Datos del usuario", style = MaterialTheme.typography.titleMedium)
-                    Text("Nombre: ${estado.nombre}")
-                    Text("Correo: ${estado.correo}")
-                    Text("Dirección: ${estado.direccion}")
+    Column(modifier = Modifier
+            .fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text(text = "Resumen de colaboración", style = MaterialTheme.typography.headlineMedium)
+        Text(text = "Revisa los datos ingresados antes de continuar.", style = MaterialTheme.typography.bodyLarge)
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = "Datos del usuario", style = MaterialTheme.typography.titleMedium)
+                Text("Nombre: ${estado.nombre}")
+                Text("Correo: ${estado.correo}")
+                Text("Dirección: ${estado.direccion}")
 
-                    // Ocultamos la contraseña en la pantalla
-                    Text(text = "Contraseña: ${"*".repeat(estado.clave.length)}")
-                }
+                // Ocultamos la contraseña en la pantalla
+                Text(text = "Contraseña: ${"*".repeat(estado.clave.length)}")
             }
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(text = "Datos de colaboración", style = MaterialTheme.typography.titleMedium)
-                    Text(text = "Tipo de colaborador: ${estado.tipoColaborador}")
-
-                    // Solo muestra empresa cuando corresponde
-                    if (estado.tipoColaborador == "Empresa") { Text("Empresa: ${estado.empresa}") }
-
-                    Text("Modalidad: ${estado.modalidad}")
-                    Text("Mensaje: ${estado.mensaje}")
-                }
-            }
-            Text(text = "Términos: ${if (estado.aceptaTerminos) {"Aceptados"
-                    } else{ "No aceptados" }}")
-            // Regresa al formulario conservando los datos
-            Button(onClick = {navController.popBackStack() }, modifier = Modifier.fillMaxWidth()) {
-                Text("Volver y editar") }
         }
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = "Datos de colaboración", style = MaterialTheme.typography.titleMedium)
+                Text(text = "Tipo de colaborador: ${estado.tipoColaborador}")
+
+                // Solo muestra empresa cuando corresponde
+                if (estado.tipoColaborador == "Empresa") { Text("Empresa: ${estado.empresa}") }
+
+                Text("Modalidad: ${estado.modalidad}")
+                Text("Mensaje: ${estado.mensaje}")
+            }
+        }
+        Text(text = "Términos: ${if (estado.aceptaTerminos) {"Aceptados"
+                } else{ "No aceptados" }}")
+        // Regresa al formulario conservando los datos
+        Button(onClick = {navController.popBackStack() }, modifier = Modifier.fillMaxWidth()) {
+            Text("Volver y editar") }
     }
 }

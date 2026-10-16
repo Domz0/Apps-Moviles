@@ -2,6 +2,10 @@ package cl.duoc.alba_Lab.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import cl.duoc.alba_Lab.ui.screens.AlbaScaffold
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,7 +19,6 @@ import cl.duoc.alba_Lab.ui.screens.CatalogoScreen
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 
-// Navegación: reúne las pantallas anteriores y el flujo Registro -> Resumen.
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -23,7 +26,6 @@ fun AppNavigation() {
     // Se crea una sola vez, fuera de las rutas, para compartir el formulario.
     val usuarioViewModel: UsuarioViewModel = viewModel()
 
-    // Eventos de la guía 10: permiten navegar desde el menú y la barra inferior.
     LaunchedEffect(Unit) {
         mainViewModel.navigationEvents.collect { event ->
             when (event) {
@@ -42,13 +44,19 @@ fun AppNavigation() {
     }
 
     // faltan agregar un par de ventanas
-    NavHost(navController = navController, startDestination = Screen.Home.route) {
-        composable(Screen.Home.route) { HomeScreen(mainViewModel) }
-        composable(Screen.Profile.route) { ProfileScreen(mainViewModel) }
-        composable(Screen.Settings.route) { SettingsScreen(mainViewModel) }
-        composable(Screen.Registro.route) { RegistroScreen(navController, usuarioViewModel) }
-        composable(Screen.Resumen.route) { ResumenScreen(navController, usuarioViewModel) }
-        composable(Screen.Catalogo.route) { CatalogoScreen(mainViewModel) }
+    AlbaScaffold(mainViewModel) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Home.route,
+            modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)
+        ) {
+            composable(Screen.Home.route) { HomeScreen(mainViewModel) }
+            composable(Screen.Profile.route) { ProfileScreen(mainViewModel) }
+            composable(Screen.Settings.route) { SettingsScreen(mainViewModel) }
+            composable(Screen.Registro.route) { RegistroScreen(navController, usuarioViewModel) }
+            composable(Screen.Resumen.route) { ResumenScreen(navController, usuarioViewModel) }
+            composable(Screen.Catalogo.route) { CatalogoScreen(mainViewModel) }
 
+        }
     }
 }

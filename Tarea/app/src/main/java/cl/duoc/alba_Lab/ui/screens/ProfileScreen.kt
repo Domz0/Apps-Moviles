@@ -15,11 +15,17 @@ import cl.duoc.alba_Lab.viewmodel.MainViewModel
 
 @Composable
 fun ProfileScreen(viewModel: MainViewModel) {
-    // Perfil: pantalla básica con un botón para regresar a la vista anterior.
-    Scaffold(
-        bottomBar = {
-            // Navbar: barra inferior para navegar entre Inicio, Perfil y Configuración.
-            NavigationBar {
+    Column(Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.weight(1f).fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Pantalla de Perfil")
+            Spacer(Modifier.height(16.dp))
+            Button(onClick = { viewModel.navigateBack() }) { Text("Volver atrás") }
+        }
+        NavigationBar {
                 NavigationBarItem(
                     selected = false,
                     onClick = { viewModel.navigateTo(Screen.Home) },
@@ -39,16 +45,5 @@ fun ProfileScreen(viewModel: MainViewModel) {
                     label = { Text("Configuración") }
                 )
             }
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier.padding(innerPadding).fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Pantalla de Perfil")
-            Spacer(Modifier.height(16.dp))
-            Button(onClick = { viewModel.navigateBack() }) { Text("Volver atrás") }
-        }
     }
 }

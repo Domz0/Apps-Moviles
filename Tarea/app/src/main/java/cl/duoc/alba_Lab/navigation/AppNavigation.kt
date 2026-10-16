@@ -11,6 +11,7 @@ import cl.duoc.alba_Lab.ui.screens.ProfileScreen
 import cl.duoc.alba_Lab.ui.screens.RegistroScreen
 import cl.duoc.alba_Lab.ui.screens.ResumenScreen
 import cl.duoc.alba_Lab.ui.screens.SettingsScreen
+import cl.duoc.alba_Lab.ui.screens.CatalogoScreen
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 
@@ -40,12 +41,14 @@ fun AppNavigation() {
         }
     }
 
-    // Inicio conserva el logo; el menú da acceso al registro de la guía 11.
+    // faltan agregar un par de ventanas
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.Home.route) { HomeScreen(mainViewModel) }
         composable(Screen.Profile.route) { ProfileScreen(mainViewModel) }
         composable(Screen.Settings.route) { SettingsScreen(mainViewModel) }
         composable(Screen.Registro.route) { RegistroScreen(navController, usuarioViewModel) }
         composable(Screen.Resumen.route) { ResumenScreen(navController, usuarioViewModel) }
+        composable(Screen.Catalogo.route) { CatalogoScreen(mainViewModel) }
+
     }
 }

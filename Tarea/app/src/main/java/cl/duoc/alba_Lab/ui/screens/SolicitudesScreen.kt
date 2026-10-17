@@ -11,6 +11,8 @@ import androidx.navigation.NavController
 import cl.duoc.alba_Lab.model.Solicitud
 import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.runtime.saveable.rememberSaveable
 
 @Composable
 fun SolicitudesScreen(navController: NavController,viewModel: UsuarioViewModel){
@@ -32,20 +34,27 @@ fun SolicitudesScreen(navController: NavController,viewModel: UsuarioViewModel){
 
         items(items = solicitudes,key = { it.id }
         ) { solicitud ->
+            var mostrarDetalles by rememberSaveable{mutableStateOf(false) }
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp),verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(text = solicitud.modalidad,style = MaterialTheme.typography.titleMedium)
-
                     Text("Nombre: ${solicitud.nombre}")
-                    Text("Correo: ${solicitud.correo}")
-                    Text("Tipo: ${solicitud.tipoColaborador}")
+                    TextButton(onClick = {mostrarDetalles = !mostrarDetalles}
+                    ) {Text(if (mostrarDetalles) {"Ocultar detalles"
+                        } else {"Ver detalles"}
+                        )
+                    }
 
-                    if (solicitud.tipoColaborador == "Empresa") {Text("Empresa: ${solicitud.empresa}")}
+                    AnimatedVisibility(visible = mostrarDetalles) {Column(verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text("Correo: ${solicitud.correo}")
+                            Text("Tipo: ${solicitud.tipoColaborador}")
 
-                    // Solo la dirección depende de este if.
-                    if (solicitud.direccion.isNotBlank()) {Text("Dirección: ${solicitud.direccion}")}
-
-                    Text("Mensaje: ${solicitud.mensaje}")
+                            if (solicitud.tipoColaborador == "Empresa") {Text("Empresa: ${solicitud.empresa}")}
+                            if (solicitud.direccion.isNotBlank()) {Text("Dirección: ${solicitud.direccion}")}
+                            Text("Mensaje: ${solicitud.mensaje}")
+                        }
+                    }
 
                     Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {

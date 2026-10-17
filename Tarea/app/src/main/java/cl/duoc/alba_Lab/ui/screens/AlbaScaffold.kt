@@ -35,6 +35,12 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
                             }
                         }
                     )
+                    NavigationDrawerItem(label = {Text("Configuración") },
+                        selected = false,
+                        onClick = {scope.launch {drawerState.close()
+                                viewModel.navigateTo(Screen.Settings)}
+                        }
+                    )
                     NavigationDrawerItem(
                         label = { Text("Registro de usuario") },
                         selected = false,

@@ -1,35 +1,73 @@
 package cl.duoc.alba_Lab.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cl.duoc.alba_Lab.navigation.Screen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import cl.duoc.alba_Lab.viewmodel.EstadoViewModel
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
 
 // Configuración: pantalla del ejemplo con accesos a Inicio y Perfil.
 @Composable
-fun SettingsScreen(viewModel: MainViewModel) {
+fun SettingsScreen(mainViewModel: MainViewModel, estadoViewModel: EstadoViewModel = viewModel()
+) {
+    val activo by estadoViewModel.activo.collectAsState()
+    val mostrarMensaje by estadoViewModel.mostrarMensaje.collectAsState()
 
-    // Contenido centralizado de la pantalla de configuración.
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Pantalla de Configuración (Settings)")
-        Spacer(Modifier.height(24.dp))
-        // Emitir el evento de navegación al ViewModel.
-        Button(onClick = { viewModel.navigateTo(Screen.Home) }) {
-            Text("Volver al Inicio")
+    //muestra el indicador mientras se recupera la preferencia
+    if (activo == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+        ) {CircularProgressIndicator() //aparece durante la carga inicial
         }
-        Spacer(Modifier.height(16.dp))
-        Button(onClick = { viewModel.navigateTo(Screen.Profile) }) {
-            Text("Ir a Perfil")
+    } else {
+        val estaActivo = activo == true
+
+        //se cambia el color levemente segun el mensaje // animateColorAsState esto anima el cambio de color del boton
+        val colorAnimado by animateColorAsState(targetValue = if (estaActivo) {MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.secondary
+            },
+            animationSpec = tween(durationMillis = 500), label = "Color del botón")
+
+        // el texto dependera del estado actual
+        val textoBoton by remember(estaActivo) {derivedStateOf {if (estaActivo) "Desactivar" else "Activar"}
+        } //obtiene activar o desactivar segun estado
+
+        Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp),horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Configuración", style = MaterialTheme.typography.headlineMedium)
+
+            Text(text = "Modo de colaboración",style = MaterialTheme.typography.titleLarge)
+
+            Text(text = if (estaActivo) {"El modo está activado"
+                } else {"El modo está desactivado"}
+            )
+
+            Button(onClick = {estadoViewModel.alternarEstado()},
+                colors = ButtonDefaults.buttonColors(containerColor = colorAnimado),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+            ) {
+                Text(textoBoton)
+            }
+
+            AnimatedVisibility(visible = mostrarMensaje) {
+                Text(text = "Preferencia guardada",color = MaterialTheme.colorScheme.primary)
+            }
+
+            TextButton(onClick = {mainViewModel.navigateBack()}
+            ) {
+                Text("Volver")
+            }
         }
     }
 }

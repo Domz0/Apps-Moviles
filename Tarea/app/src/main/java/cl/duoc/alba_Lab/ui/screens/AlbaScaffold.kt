@@ -86,12 +86,10 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
                         }
                     )
                     NavigationDrawerItem(
-                        label = { Text("Historial (tras login)") },
+                        label = { Text("Mis solicitudes")},
                         selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.close()
-                                viewModel.navigateTo(Screen.Profile)// por modificar
+                        onClick = {scope.launch {drawerState.close()
+                                viewModel.navigateTo(Screen.Solicitudes)
                             }
                         }
                     )

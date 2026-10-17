@@ -6,11 +6,19 @@ import cl.duoc.alba_Lab.model.UsuarioUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.util.UUID
+import cl.duoc.alba_Lab.model.Solicitud
 
 // ViewModel compartido: mantiene los datos entre Registro y Resumen.
 class UsuarioViewModel : ViewModel() {
     private val _estado = MutableStateFlow(UsuarioUiState())
     val estado = _estado.asStateFlow()
+    //Lista temporal de solicitudes
+    private val _solicitudes = MutableStateFlow<List<Solicitud>>(emptyList())
+    val solicitudes = _solicitudes.asStateFlow()
+
+    //Aqui se identifica la solicitud que estamos creando o editando
+    private var idSolicitudActual: String? = null
 
     // Nombre: actualiza el texto y limpia su error al editar.
     fun onNombreChange(valor: String) {
@@ -70,6 +78,48 @@ class UsuarioViewModel : ViewModel() {
             it.copy(mensaje = valor,
                     errores = it.errores.copy(mensaje = null))
         }
+    }
+    //Limpio el formulario para nueva solicitud
+    fun nuevaSolicitud(){
+        idSolicitudActual= null
+        _estado.value = UsuarioUiState()
+    }
+    //Se guarda una solicitud nueva o se actualiza la actual
+    fun guardarSolicitud():Boolean {
+        if(!validarFormulario()){return false}
+
+        val datos = _estado.value
+        val id = idSolicitudActual ?: UUID.randomUUID().toString()
+
+        val solicitud = Solicitud(id= id, nombre= datos.nombre.trim(), correo = datos.correo.trim(),
+            direccion = datos.direccion.trim(), tipoColaborador = datos.tipoColaborador,
+            empresa= if(datos.tipoColaborador== "Empresa"){datos.empresa.trim()
+            }else{ "" },
+            modalidad = datos.modalidad,
+            mensaje= datos.mensaje.trim(),
+            aceptaTerminos = datos.aceptaTerminos)
+
+        _solicitudes.update { lista -> if (lista.any { it.id == id }) {lista.map { existente ->
+                    if (existente.id == id) solicitud else existente}
+            } else {lista + solicitud}}
+
+        idSolicitudActual = id
+        return true
+    }
+    //Se carga una nueva solicitud ya guardada en formulario
+    fun editarSolicitud(id: String): Boolean {
+        val solicitud = _solicitudes.value.find {it.id == id} ?: return false
+
+        idSolicitudActual = solicitud.id
+
+        _estado.value = UsuarioUiState(nombre = solicitud.nombre,correo = solicitud.correo,
+            direccion = solicitud.direccion,tipoColaborador = solicitud.tipoColaborador,empresa = solicitud.empresa,
+            modalidad = solicitud.modalidad,mensaje = solicitud.mensaje, aceptaTerminos = solicitud.aceptaTerminos)
+        return true
+    }
+    //se elimina la solicitud que tenga ese identicadr
+    fun eliminarSolicitud(id: String) {_solicitudes.update {lista -> lista.filterNot { it.id == id }}
+        if (idSolicitudActual == id) {nuevaSolicitud()}
     }
 
     // Validación de la guía: campos obligatorios, correo con @ y clave de al menos 6 caracteres.

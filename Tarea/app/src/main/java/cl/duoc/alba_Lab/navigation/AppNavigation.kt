@@ -18,6 +18,7 @@ import cl.duoc.alba_Lab.ui.screens.SettingsScreen
 import cl.duoc.alba_Lab.ui.screens.CatalogoScreen
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
+import cl.duoc.alba_Lab.ui.screens.SolicitudesScreen
 
 @Composable
 fun AppNavigation() {
@@ -56,7 +57,7 @@ fun AppNavigation() {
             composable(Screen.Registro.route) { RegistroScreen(navController, usuarioViewModel) }
             composable(Screen.Resumen.route) { ResumenScreen(navController, usuarioViewModel) }
             composable(Screen.Catalogo.route) { CatalogoScreen(mainViewModel) }
-
+            composable(Screen.Solicitudes.route){SolicitudesScreen(navController,usuarioViewModel)}
         }
     }
 }

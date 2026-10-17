@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
+import cl.duoc.alba_Lab.navigation.Screen
 
 // Lee los datos del mismo ViewModel utilizado por el formulario.
 @Composable
@@ -45,7 +46,14 @@ fun ResumenScreen(navController: NavController, viewModel: UsuarioViewModel
             }
         }
         Text(text = "Términos: ${if (estado.aceptaTerminos) {"Aceptados"
-                } else{ "No aceptados" }}")
+        } else{ "No aceptados" }}")
+
+        Button(onClick = {
+            if (viewModel.guardarSolicitud()) {navController.navigate(Screen.Solicitudes.route) {
+                        popUpTo(Screen.Registro.route) {inclusive = true}
+                        launchSingleTop = true}}}, modifier = Modifier.fillMaxWidth()){
+            Text("Guardar solicitud")
+        }
         // Regresa al formulario conservando los datos
         Button(onClick = {navController.popBackStack() }, modifier = Modifier.fillMaxWidth()) {
             Text("Volver y editar") }

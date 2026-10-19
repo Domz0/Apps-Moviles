@@ -17,11 +17,12 @@ import cl.duoc.alba_Lab.ui.screens.ResumenScreen
 import cl.duoc.alba_Lab.ui.screens.SettingsScreen
 import cl.duoc.alba_Lab.ui.screens.CatalogoScreen
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import cl.duoc.alba_Lab.viewmodel.TemaViewModel
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 import cl.duoc.alba_Lab.ui.screens.SolicitudesScreen
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(temaViewModel: TemaViewModel) {
     val navController = rememberNavController()
     val mainViewModel: MainViewModel = viewModel()
     // Se crea una sola vez, fuera de las rutas, para compartir el formulario.
@@ -53,7 +54,7 @@ fun AppNavigation() {
         ) {
             composable(Screen.Home.route) { HomeScreen(mainViewModel) }
             composable(Screen.Profile.route) { ProfileScreen(mainViewModel) }
-            composable(Screen.Settings.route) { SettingsScreen(mainViewModel) }
+            composable(Screen.Settings.route) { SettingsScreen(mainViewModel, temaViewModel) }
             composable(Screen.Registro.route) { RegistroScreen(navController, usuarioViewModel) }
             composable(Screen.Resumen.route) { ResumenScreen(navController, usuarioViewModel) }
             composable(Screen.Catalogo.route) { CatalogoScreen(mainViewModel) }

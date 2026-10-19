@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cl.duoc.alba_Lab.R
 import cl.duoc.alba_Lab.ui.theme.AlbaTheme
+import cl.duoc.alba_Lab.ui.theme.LocalAlbaDarkTheme
 import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
 
@@ -54,12 +55,25 @@ private fun HomeScreenContent(modifier: Modifier = Modifier, onSettings: () -> U
 }
 @Composable
 private fun HomeLogo(modifier: Modifier = Modifier) {
-    Image(
-        painter = painterResource(R.drawable.alba_logo),
-        contentDescription = "Logo de Alba",
+    val oscuro = LocalAlbaDarkTheme.current
+    Column(
         modifier = modifier,
-        contentScale = ContentScale.Fit
-    )
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Image(
+            painter = painterResource(if (oscuro) R.drawable.mark_dark else R.drawable.mark_light),
+            contentDescription = null,
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            contentScale = ContentScale.Fit
+        )
+        Image(
+            painter = painterResource(if (oscuro) R.drawable.wordmark_dark else R.drawable.wordmark_light),
+            contentDescription = "Alba Conecta",
+            modifier = Modifier.widthIn(max = 260.dp).fillMaxWidth().height(38.dp),
+            contentScale = ContentScale.Fit
+        )
+    }
 }
 @Composable
 private fun HomeWelcome(

@@ -6,6 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -61,12 +62,12 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
                             }
                         }
                     )
-                    NavigationDrawerItem(label = {Text("Configuración") },
-                        selected = false,
-                        onClick = {scope.launch {drawerState.close()
-                                viewModel.navigateTo(Screen.Settings)}
-                        }
-                    )
+                    //NavigationDrawerItem(label = {Text("Configuración") },
+                    //    selected = false,
+                    //    onClick = {scope.launch {drawerState.close()
+                    //        viewModel.navigateTo(Screen.Settings)}
+                    //    }
+                    //)
                     NavigationDrawerItem(
                         label = { Text("Registro de usuario") },
                         selected = false,
@@ -148,6 +149,11 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
                         // Hamburguesa
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
+                        }
+                    }, // deje el boton para configurar, asi despues dejamos todo lo de accesibilidad aqui
+                    actions = {
+                        IconButton(onClick = { viewModel.navigateTo(Screen.Settings) }) {
+                            Icon(Icons.Default.Settings, contentDescription = "Abrir configuración")
                         }
                     }
                 )

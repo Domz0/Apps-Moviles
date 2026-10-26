@@ -20,13 +20,24 @@ import cl.duoc.alba_Lab.viewmodel.MainViewModel
 import cl.duoc.alba_Lab.viewmodel.TemaViewModel
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 import cl.duoc.alba_Lab.ui.screens.SolicitudesScreen
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import cl.duoc.alba_Lab.data.AlbaDataBase
+import cl.duoc.alba_Lab.data.SolicitudRepository
 
 @Composable
 fun AppNavigation(temaViewModel: TemaViewModel) {
     val navController = rememberNavController()
     val mainViewModel: MainViewModel = viewModel()
-    // Se crea una sola vez, fuera de las rutas, para compartir el formulario.
-    val usuarioViewModel: UsuarioViewModel = viewModel()
+    val context = LocalContext.current.applicationContext
+    //Viewmodel compartido conectado a Room
+    val usuarioViewModel: UsuarioViewModel =  viewModel(factory= viewModelFactory {
+        initializer {
+            val database = AlbaDataBase.obtenerDatabase(context)
+            val repository = SolicitudRepository(database.solicitudDao())
+            UsuarioViewModel(repository)}
+    })
 
     LaunchedEffect(Unit) {
         mainViewModel.navigationEvents.collect { event ->

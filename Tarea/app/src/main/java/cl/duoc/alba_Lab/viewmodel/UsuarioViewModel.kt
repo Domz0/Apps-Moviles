@@ -8,14 +8,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.UUID
 import cl.duoc.alba_Lab.model.Solicitud
+import androidx.lifecycle.viewModelScope
+import cl.duoc.alba_Lab.data.SolicitudRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 // ViewModel compartido: mantiene los datos entre Registro y Resumen.
-class UsuarioViewModel : ViewModel() {
+class UsuarioViewModel(private val repository: SolicitudRepository) : ViewModel() {
     private val _estado = MutableStateFlow(UsuarioUiState())
     val estado = _estado.asStateFlow()
-    //Lista temporal de solicitudes
-    private val _solicitudes = MutableStateFlow<List<Solicitud>>(emptyList())
-    val solicitudes = _solicitudes.asStateFlow()
+    //Lista de solicitudes obtenidas desde Room
+    val solicitudes = repository.solicitudes.stateIn(
+        scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = emptyList())
 
     //Aqui se identifica la solicitud que estamos creando o editando
     private var idSolicitudActual: String? = null
@@ -85,30 +90,31 @@ class UsuarioViewModel : ViewModel() {
         _estado.value = UsuarioUiState()
     }
     //Se guarda una solicitud nueva o se actualiza la actual
-    fun guardarSolicitud():Boolean {
-        if(!validarFormulario()){return false}
-
+    suspend fun guardarSolicitud(): Boolean{
+        if(!validarFormulario()) {
+            return false
+        }
         val datos = _estado.value
-        val id = idSolicitudActual ?: UUID.randomUUID().toString()
-
-        val solicitud = Solicitud(id= id, nombre= datos.nombre.trim(), correo = datos.correo.trim(),
-            direccion = datos.direccion.trim(), tipoColaborador = datos.tipoColaborador,
-            empresa= if(datos.tipoColaborador== "Empresa"){datos.empresa.trim()
-            }else{ "" },
+        val id= idSolicitudActual ?: UUID.randomUUID().toString()
+        val solicitud = Solicitud(
+            id=id,
+            nombre= datos.nombre.trim(),
+            correo = datos.correo.trim(),
+            direccion = datos.direccion.trim(),
+            tipoColaborador = datos.tipoColaborador,
+            empresa =if (datos.tipoColaborador== "Empresa"){datos.empresa.trim()
+            }else {
+            ""},
             modalidad = datos.modalidad,
-            mensaje= datos.mensaje.trim(),
+            mensaje = datos.mensaje.trim(),
             aceptaTerminos = datos.aceptaTerminos)
-
-        _solicitudes.update { lista -> if (lista.any { it.id == id }) {lista.map { existente ->
-                    if (existente.id == id) solicitud else existente}
-            } else {lista + solicitud}}
-
+        repository.guardarSolicitud(solicitud)
         idSolicitudActual = id
         return true
     }
     //Se carga una nueva solicitud ya guardada en formulario
     fun editarSolicitud(id: String): Boolean {
-        val solicitud = _solicitudes.value.find {it.id == id} ?: return false
+        val solicitud = solicitudes.value.find {it.id == id} ?: return false
 
         idSolicitudActual = solicitud.id
 
@@ -118,11 +124,17 @@ class UsuarioViewModel : ViewModel() {
         return true
     }
     //se elimina la solicitud que tenga ese identicadr
-    fun eliminarSolicitud(id: String) {_solicitudes.update {lista -> lista.filterNot { it.id == id }}
-        if (idSolicitudActual == id) {nuevaSolicitud()}
+    fun eliminarSolicitud(id: String) {
+        viewModelScope.launch{
+            repository.eliminarSolicitud(id)
+            if (idSolicitudActual == id){
+                nuevaSolicitud()
+            }
+        }
     }
 
-    // Validación de la guía: campos obligatorios, correo con @ y clave de al menos 6 caracteres.
+
+    //valida los campos del formulario de colaboracion
     fun validarFormulario(): Boolean {
         val estadoActual = _estado.value
         val errores = UsuarioErrores(

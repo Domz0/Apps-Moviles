@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 import cl.duoc.alba_Lab.navigation.Screen
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 // Lee los datos del mismo ViewModel utilizado por el formulario.
 @Composable
@@ -33,6 +35,7 @@ fun ResumenScreen(navController: NavController, viewModel: UsuarioViewModel
                 Text(text = "Contraseña: ${"*".repeat(estado.clave.length)}")
             }
         }
+        val scope = rememberCoroutineScope()
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = "Datos de colaboración", style = MaterialTheme.typography.titleMedium)
@@ -49,9 +52,14 @@ fun ResumenScreen(navController: NavController, viewModel: UsuarioViewModel
         } else{ "No aceptados" }}")
 
         Button(onClick = {
-            if (viewModel.guardarSolicitud()) {navController.navigate(Screen.Solicitudes.route) {
+            scope.launch {if (viewModel.guardarSolicitud()) {navController.navigate(Screen.Solicitudes.route) { //permite guardar con Room y esperar a que termine para lanzar solicitudes
                         popUpTo(Screen.Registro.route) {inclusive = true}
-                        launchSingleTop = true}}}, modifier = Modifier.fillMaxWidth()){
+                    launchSingleTop = true
+                    }
+                }
+            }
+        }, modifier = Modifier.fillMaxWidth()
+        ){
             Text("Guardar solicitud")
         }
         // Regresa al formulario conservando los datos

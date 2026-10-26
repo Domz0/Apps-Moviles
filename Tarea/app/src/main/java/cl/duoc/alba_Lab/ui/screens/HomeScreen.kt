@@ -86,12 +86,13 @@ private fun HomeWelcome(
         verticalArrangement = Arrangement.spacedBy(20.dp),
         horizontalAlignment = if (centrado) Alignment.CenterHorizontally else Alignment.Start
     ) {
-        Text("¡Bienvenido!", color = MaterialTheme.colorScheme.primary)
+        Text("Conoce, participa y conecta", color = MaterialTheme.colorScheme.primary)
         //Button(onClick = onSettings) { Text("Ir a Configuración") }
         //Text("Aplicación funcionando correctamente", color = MaterialTheme.colorScheme.secondary)
         Marco("Alba Conecta") {
-            Tarjeta("Resumen", "aqui dejamos algo como el propsito apoyo e informacion.")
-            Text("bottom text con algo extra(?)")
+            Tarjeta("Nuestro propósito", "Acercar a personas y empresas a CORPALIV y Alba Lab, conectando iniciativas que promueven la inclusión y nuevas oportunidades.")
+            Tarjeta("Formas de colaborar","Conoce las opciones de donación, voluntariado y alianzas. Registra tu interés desde el menú.")
+            Text(text="Prototipo académico de Duoc UC. No es una app oficial de CORPALIV. Las solicitudes son de prueba y no se envían a la organización", style= MaterialTheme.typography.bodySmall)
         }
     }
 }

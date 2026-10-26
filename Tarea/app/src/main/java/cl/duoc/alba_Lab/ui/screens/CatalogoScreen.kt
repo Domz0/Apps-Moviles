@@ -25,14 +25,16 @@ import cl.duoc.alba_Lab.viewmodel.MainViewModel
 @Composable
 fun CatalogoScreen(viewModel: MainViewModel) {
     val elementos = listOf(
-        // titulo e imagen
-        "ejemplo" to R.drawable.gato_malandro,
-        "ejemplo2" to R.drawable.stock
-    )
+        Triple("Difusor de aroma", R.drawable.difusor_aroma, "Disponible en el catalogo de Alba Lab en diferentes formatos"),
+        Triple("Difusor colagante", R.drawable.difusor_colgante, "Una de las alternativas de la línea de bienestar de Alba Lab"))
     Muestra("Catálogo") {
+        Text(text = "Productos con propósito", style= MaterialTheme.typography.titleLarge)
+        Text(text= "Conoce productos elaborados por jóvenes y adultos de Alba Lab, en un espacio que impulsa sus habilidades y oportunidades.")
+        Text(text="¿Te interesa algún producto? Completa el formulario en «Quiero colaborar» y selecciona «Consulta por productos y servicios».")
+        Text(text = "Catálogo de referencia para fines académicos. Las solicitudes de esta app son demostrativas y no se envían a CORPALIV.", style = MaterialTheme.typography.bodySmall)
         // serian las noticias o colabs
         TextButton(onClick = { viewModel.navigateBack() }) { Text("Volver") }
-        elementos.forEach { (nombre, imagen) ->
+        elementos.forEach { (nombre, imagen, descripcion) ->
             Card(Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -49,7 +51,7 @@ fun CatalogoScreen(viewModel: MainViewModel) {
                         text = nombre,
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Text("Este texto tambien tiene que cambiar para adecuar a lo que pongamos despues.")
+                    Text(text= descripcion)
                 }
             }
         }

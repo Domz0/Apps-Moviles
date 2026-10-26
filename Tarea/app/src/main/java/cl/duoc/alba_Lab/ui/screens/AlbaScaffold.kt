@@ -99,7 +99,7 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
                         }
                     )
                     NavigationDrawerItem(
-                        label = { Text("Ir a Perfil (tras login)") },
+                        label = { Text("Mi perfil") },
                         selected = false,
                         onClick = {
                             scope.launch {
@@ -109,7 +109,7 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
                         }
                     )
                     NavigationDrawerItem(
-                        label = { Text("Editar Perfil (tras login)") },
+                        label = { Text("Editar Perfil") },
                         selected = false,
                         onClick = {
                             scope.launch {

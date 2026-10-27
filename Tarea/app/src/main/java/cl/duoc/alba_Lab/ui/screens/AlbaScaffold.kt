@@ -79,12 +79,12 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
                         }
                     )
                     NavigationDrawerItem(
-                        label = { Text("Iniciar sesion") },
+                        label = { Text("Iniciar sesión") },
                         selected = false,
                         onClick = {
                             scope.launch {
                                 drawerState.close()
-                                viewModel.navigateTo(Screen.Profile)// por modificar
+                                viewModel.navigateTo(Screen.Login)
                             }
                         }
                     )

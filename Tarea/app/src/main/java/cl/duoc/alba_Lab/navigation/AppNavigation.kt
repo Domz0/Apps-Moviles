@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import cl.duoc.alba_Lab.ui.screens.HomeScreen
+import cl.duoc.alba_Lab.ui.screens.LoginScreen
 import cl.duoc.alba_Lab.ui.screens.ProfileScreen
 import cl.duoc.alba_Lab.ui.screens.RegistroScreen
 import cl.duoc.alba_Lab.ui.screens.ResumenScreen
@@ -64,6 +65,7 @@ fun AppNavigation(temaViewModel: TemaViewModel) {
             modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)
         ) {
             composable(Screen.Home.route) { HomeScreen(mainViewModel) }
+            composable(Screen.Login.route) { LoginScreen(mainViewModel, viewModel()) }
             composable(Screen.Profile.route) { ProfileScreen(mainViewModel) }
             composable(Screen.Settings.route) { SettingsScreen(mainViewModel, temaViewModel) }
             composable(Screen.Registro.route) { RegistroScreen(navController, usuarioViewModel) }

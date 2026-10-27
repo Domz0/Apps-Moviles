@@ -15,6 +15,10 @@ interface SolicitudDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) //crea la solicitud o guarda sus cambios por id
     suspend fun guardarSolicitud(solicitud: Solicitud)
 
+    // El perfil modifica únicamente los datos personales del registro existente.
+    @Query("UPDATE solicitudes SET nombre = :nombre, correo = :correo WHERE id = :id")
+    suspend fun actualizarDatosPersonales(id: String, nombre: String, correo: String): Int
+
     @Query("DELETE FROM solicitudes WHERE id = :id") //se elimina la solicitud pro id
     suspend fun eliminarSolicitud(id: String) //por el suspend ejecutamos operaciones desde corrutina sin bloquear interfaz
 }

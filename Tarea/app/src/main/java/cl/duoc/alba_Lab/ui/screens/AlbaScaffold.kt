@@ -1,4 +1,4 @@
-package cl.duoc.alba_Lab.ui.screens
+﻿package cl.duoc.alba_Lab.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.Image
@@ -30,102 +30,24 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
         drawerContent = {
             ModalDrawerSheet {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    //Text("Menú", modifier = Modifier.padding(16.dp))
-                    NavigationDrawerItem(
-                        icon = {
-                            Image(
-                                painter = painterResource(
-                                    if (LocalAlbaDarkTheme.current) R.drawable.mark_dark
-                                    else R.drawable.mark_light
-                                ),
-                                contentDescription = null,
-                                modifier = Modifier.size(60.dp),
-                                contentScale = ContentScale.Fit
-                            )
-                        },
-                        label = {
-                            Image(
-                                painter = painterResource(
-                                    if (LocalAlbaDarkTheme.current) R.drawable.wordmark_dark
-                                    else R.drawable.wordmark_light
-                                ),
-                                contentDescription = "Alba Conecta, ir a Inicio",
-                                modifier = Modifier.width(190.dp).height(28.dp),
-                                contentScale = ContentScale.Fit
-                            )
-                        },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.close()
-                                viewModel.navigateTo(Screen.Home)
-                            }
-                        }
+                    val opciones = listOf(
+                        "Registrar" to Screen.Registro,
+                        "Iniciar" to Screen.Login,
+                        "Catálogo" to Screen.Catalogo,
+                        "Mi perfil" to Screen.Profile
                     )
-                    //NavigationDrawerItem(label = {Text("Configuración") },
-                    //    selected = false,
-                    //    onClick = {scope.launch {drawerState.close()
-                    //        viewModel.navigateTo(Screen.Settings)}
-                    //    }
-                    //)
-                    NavigationDrawerItem(
-                        label = { Text("Registro de usuario") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.close()
-                                viewModel.navigateTo(Screen.Registro)
+                    opciones.forEach { (titulo, pantalla) ->
+                        NavigationDrawerItem(
+                            label = { Text(titulo) },
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.close()
+                                    viewModel.navigateTo(pantalla)
+                                }
                             }
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Iniciar sesión") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.close()
-                                viewModel.navigateTo(Screen.Login)
-                            }
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Catálogo") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.close()
-                                viewModel.navigateTo(Screen.Catalogo)
-                            }
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Mi perfil") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.close()
-                                viewModel.navigateTo(Screen.Profile)// por modificar
-                            }
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Editar Perfil") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.close()
-                                viewModel.navigateTo(Screen.Profile)// por modificar
-                            }
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Mis solicitudes")},
-                        selected = false,
-                        onClick = {scope.launch {drawerState.close()
-                                viewModel.navigateTo(Screen.Solicitudes)
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -163,4 +85,3 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
         }
     }
 }
-

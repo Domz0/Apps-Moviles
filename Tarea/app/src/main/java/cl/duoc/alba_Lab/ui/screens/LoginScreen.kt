@@ -14,10 +14,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import cl.duoc.alba_Lab.viewmodel.LoginViewModel
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
+import cl.duoc.alba_Lab.navigation.Screen
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @Composable
-fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel) {
+fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel, usuarioViewModel: UsuarioViewModel) {
     val estado by viewModel.estado.collectAsState()
+    var errorSesion by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier.fillMaxSize().imePadding()
@@ -29,7 +35,7 @@ fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel) {
 
         OutlinedTextField(
             value = estado.correo,
-            onValueChange = viewModel::onCorreoChange,
+            onValueChange = { viewModel.onCorreoChange(it); errorSesion = null },
             label = { Text("Correo electrónico") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             isError = estado.errorCorreo != null,
@@ -39,7 +45,7 @@ fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel) {
         )
         OutlinedTextField(
             value = estado.clave,
-            onValueChange = viewModel::onClaveChange,
+            onValueChange = { viewModel.onClaveChange(it); errorSesion = null },
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -49,18 +55,26 @@ fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel) {
             modifier = Modifier.fillMaxWidth()
         )
         Button(
-            onClick = viewModel::validarFormulario,
+            onClick = {
+                errorSesion = null
+                viewModel.validarFormulario()
+                if (viewModel.estado.value.datosValidos) {
+                    if (usuarioViewModel.iniciarSesionSimulada(estado.correo, estado.clave)) {
+                        viewModel.onClaveChange("")
+                        mainViewModel.navigateTo(Screen.Profile)
+                    } else {
+                        errorSesion = "Revisa el correo registrado y la contraseña."
+                    }
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Iniciar sesión")
         }
 
-        if (estado.datosValidos) {
-            Text(
-                "pasa, pero no conecta aun",
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
+        errorSesion?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        Text("Inicio de sesión de prueba. Los registros antiguos no tienen contraseña guardada.",
+            style = MaterialTheme.typography.bodySmall)
         TextButton(onClick = { mainViewModel.navigateBack() }) { Text("Volver") }
     }
 }

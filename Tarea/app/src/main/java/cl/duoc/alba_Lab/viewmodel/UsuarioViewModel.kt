@@ -13,6 +13,8 @@ import cl.duoc.alba_Lab.data.SolicitudRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import cl.duoc.alba_Lab.model.PerfilUiState
+import kotlinx.coroutines.CancellationException
 
 // ViewModel compartido: mantiene los datos entre Registro y Resumen.
 class UsuarioViewModel(private val repository: SolicitudRepository) : ViewModel() {
@@ -24,6 +26,90 @@ class UsuarioViewModel(private val repository: SolicitudRepository) : ViewModel(
 
     //Aqui se identifica la solicitud que estamos creando o editando
     private var idSolicitudActual: String? = null
+    private val _perfil = MutableStateFlow(PerfilUiState())
+    val perfil = _perfil.asStateFlow()
+    private var perfilCargado = false
+    // Las claves son temporales: la tabla existente no almacena contraseñas.
+    private val clavesTemporales = mutableMapOf<String, String>()
+
+    fun cargarPerfil() {
+        if (perfilCargado) return
+        val actual = _estado.value
+        val registro = solicitudes.value.firstOrNull { it.id == idSolicitudActual }
+            ?: solicitudes.value.firstOrNull()
+        if (actual.nombre.isNotBlank() && actual.correo.isNotBlank()) {
+            _perfil.value = PerfilUiState(idSolicitudActual, actual.nombre, actual.correo, actual.clave)
+            perfilCargado = true
+        } else if (registro != null) {
+            _perfil.value = PerfilUiState(registro.id, registro.nombre, registro.correo,
+                clavesTemporales[registro.id].orEmpty())
+            perfilCargado = true
+        }
+    }
+
+    // Simulación: busca el correo registrado. Si existe una clave en memoria, la comprueba.
+    // Los registros antiguos no tienen clave guardada; usan la ingresada para esta sesión.
+    fun iniciarSesionSimulada(correo: String, clave: String): Boolean {
+        val registro = solicitudes.value.firstOrNull { it.correo.equals(correo.trim(), true) }
+        val actual = _estado.value
+        val usaActual = actual.correo.trim().equals(correo.trim(), true) && actual.nombre.isNotBlank()
+        if (registro == null && !usaActual) return false
+        val id = registro?.id ?: idSolicitudActual
+        val conocida = id?.let { clavesTemporales[it] }
+            ?: if (usaActual) actual.clave else ""
+        if (!conocida.isNullOrBlank() && conocida != clave) return false
+        _perfil.value = PerfilUiState(id, registro?.nombre ?: actual.nombre,
+            registro?.correo ?: actual.correo.trim(), clave)
+        if (id != null) clavesTemporales[id] = clave
+        perfilCargado = true
+        return true
+    }
+
+    fun onPerfilNombreChange(valor: String) {
+        _perfil.update { it.copy(nombre = valor, errorNombre = null, mensaje = null) }
+    }
+    fun onPerfilCorreoChange(valor: String) {
+        _perfil.update { it.copy(correo = valor, errorCorreo = null, mensaje = null) }
+    }
+    fun onPerfilClaveChange(valor: String) {
+        _perfil.update { it.copy(clave = valor, errorClave = null, mensaje = null) }
+    }
+    fun informarFoto(mensaje: String, actualizada: Boolean = false) {
+        _perfil.update { it.copy(mensaje = mensaje,
+            revisionFoto = it.revisionFoto + if (actualizada) 1 else 0) }
+    }
+
+    fun guardarPerfil() {
+        if (_perfil.value.guardando) return
+        val datos = _perfil.value
+        val errorNombre = if (datos.nombre.isBlank()) "Ingresa tu nombre" else null
+        val errorCorreo = if (!android.util.Patterns.EMAIL_ADDRESS.matcher(datos.correo.trim()).matches())
+            "Ingresa un correo válido" else null
+        val errorClave = if (datos.clave.isBlank()) "Ingresa tu contraseña" else null
+        _perfil.update { it.copy(errorNombre = errorNombre, errorCorreo = errorCorreo,
+            errorClave = errorClave, mensaje = null) }
+        if (errorNombre != null || errorCorreo != null || errorClave != null) return
+        _perfil.update { it.copy(guardando = true) }
+        viewModelScope.launch {
+            try {
+                if (datos.id != null) {
+                    check(repository.actualizarDatosPersonales(datos.id, datos.nombre.trim(), datos.correo.trim()) > 0)
+                    clavesTemporales[datos.id] = datos.clave
+                }
+                if (datos.id == idSolicitudActual) {
+                    _estado.update { it.copy(nombre = datos.nombre.trim(), correo = datos.correo.trim(), clave = datos.clave) }
+                }
+                perfilCargado = true
+                _perfil.update { it.copy(nombre = datos.nombre.trim(), correo = datos.correo.trim(),
+                    guardando = false, mensaje = if (datos.id == null) "Datos actualizados en el formulario."
+                    else "Nombre y correo guardados. Contraseña actualizada para esta sesión.") }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _perfil.update { it.copy(guardando = false, mensaje = "No se pudieron guardar los datos. Intenta nuevamente.") }
+            }
+        }
+    }
 
     // Nombre: actualiza el texto y limpia su error al editar.
     fun onNombreChange(valor: String) {
@@ -110,6 +196,11 @@ class UsuarioViewModel(private val repository: SolicitudRepository) : ViewModel(
             aceptaTerminos = datos.aceptaTerminos)
         repository.guardarSolicitud(solicitud)
         idSolicitudActual = id
+        clavesTemporales[id] = datos.clave
+        if (!perfilCargado || _perfil.value.id == id || _perfil.value.id == null) {
+            _perfil.value = PerfilUiState(id, solicitud.nombre, solicitud.correo, datos.clave)
+            perfilCargado = true
+        }
         return true
     }
     //Se carga una nueva solicitud ya guardada en formulario
@@ -119,6 +210,7 @@ class UsuarioViewModel(private val repository: SolicitudRepository) : ViewModel(
         idSolicitudActual = solicitud.id
 
         _estado.value = UsuarioUiState(nombre = solicitud.nombre,correo = solicitud.correo,
+            clave = clavesTemporales[id].orEmpty(),
             direccion = solicitud.direccion,tipoColaborador = solicitud.tipoColaborador,empresa = solicitud.empresa,
             modalidad = solicitud.modalidad,mensaje = solicitud.mensaje, aceptaTerminos = solicitud.aceptaTerminos)
         return true
@@ -127,6 +219,11 @@ class UsuarioViewModel(private val repository: SolicitudRepository) : ViewModel(
     fun eliminarSolicitud(id: String) {
         viewModelScope.launch{
             repository.eliminarSolicitud(id)
+            clavesTemporales.remove(id)
+            if (_perfil.value.id == id) {
+                _perfil.value = PerfilUiState()
+                perfilCargado = false
+            }
             if (idSolicitudActual == id){
                 nuevaSolicitud()
             }

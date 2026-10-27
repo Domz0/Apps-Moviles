@@ -34,10 +34,4 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    // Navegar hacia arriba.
-    fun navigateUp() {
-        viewModelScope.launch {
-            _navigationEvents.emit(NavigationEvent.NavigateUp)
-        }
-    }
 }

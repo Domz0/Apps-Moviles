@@ -1,4 +1,4 @@
-package cl.duoc.alba_Lab.ui.screens
+﻿package cl.duoc.alba_Lab.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,87 +10,64 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import cl.duoc.alba_Lab.model.Solicitud
 import cl.duoc.alba_Lab.navigation.Screen
+import cl.duoc.alba_Lab.ui.components.ImagenesSolicitud
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.runtime.saveable.rememberSaveable
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
-fun SolicitudesScreen(navController: NavController,viewModel: UsuarioViewModel){
-    val solicitudes by viewModel.solicitudes.collectAsState()
+fun SolicitudesScreen(navController: NavController, viewModel: UsuarioViewModel, debug: Boolean = false) {
+    val todas by viewModel.solicitudes.collectAsState()
+    val cuenta by viewModel.sesion.collectAsState()
+    val solicitudes = if (debug) todas else viewModel.solicitudesDeCuenta(todas, cuenta)
+    val formatoFecha = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    var solicitudAEliminar by remember { mutableStateOf<Solicitud?>(null) }
 
-    var solicitudAEliminar by remember {mutableStateOf<Solicitud?>(null)}
-
-    LazyColumn(modifier = Modifier.fillMaxSize(),contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {item {Text(text = "Mis solicitudes",style = MaterialTheme.typography.headlineMedium)
+    // separa entre toooodas las solicitudes y la de cada usuario
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item { Text(if (debug) "Historial de solicitudes (debug)" else "Mis solicitudes", style = MaterialTheme.typography.headlineMedium) }
+        if (debug) {
+            item { Text("Historial de prueba") }
+        } else {
+            item {
+                Button(onClick = {
+                    viewModel.nuevaSolicitud()
+                    navController.navigate(Screen.CrearSolicitud.route) { launchSingleTop = true }
+                }, modifier = Modifier.fillMaxWidth()) { Text("Nueva solicitud") }
+            }
         }
-
-        item {
-            Button(onClick = {viewModel.nuevaSolicitud()
-                    navController.navigate(Screen.Registro.route) {launchSingleTop = true}
-                }, modifier = Modifier.fillMaxWidth()) {Text("Nueva solicitud")}
-        }
-
-        if (solicitudes.isEmpty()) {item {Text("Todavía no tienes solicitudes guardadas.")}}
-
-        items(items = solicitudes,key = { it.id }
-        ) { solicitud ->
-            var mostrarDetalles by rememberSaveable{mutableStateOf(false) }
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp),verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(text = solicitud.modalidad,style = MaterialTheme.typography.titleMedium)
-                    Text("Nombre: ${solicitud.nombre}")
-                    TextButton(onClick = {mostrarDetalles = !mostrarDetalles}
-                    ) {Text(if (mostrarDetalles) {"Ocultar detalles"
-                        } else {"Ver detalles"}
-                        )
+        if (solicitudes.isEmpty()) item { Text("Todavía no hay solicitudes guardadas.") }
+        items(solicitudes, key = { it.id }) { solicitud ->
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (debug) {
+                        Text(if (solicitud.cuentaId == null) "Invitado · ${solicitud.tipoColaborador}" else "Cuenta ${solicitud.tipoColaborador}",
+                            style = MaterialTheme.typography.labelMedium)
+                        Text(solicitud.nombre)
+                        Text(solicitud.correo, style = MaterialTheme.typography.bodySmall)
                     }
-
-                    AnimatedVisibility(visible = mostrarDetalles) {Column(verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text("Correo: ${solicitud.correo}")
-                            Text("Tipo: ${solicitud.tipoColaborador}")
-
-                            if (solicitud.tipoColaborador == "Empresa") {Text("Empresa: ${solicitud.empresa}")}
-                            if (solicitud.direccion.isNotBlank()) {Text("Dirección: ${solicitud.direccion}")}
-                            Text("Mensaje: ${solicitud.mensaje}")
+                    Text("Tipo: ${solicitud.modalidad}", style = MaterialTheme.typography.titleMedium)
+                    Text("Fecha: ${solicitud.fechaCreacion?.let { formatoFecha.format(Date(it)) } ?: "No registrada"}", style = MaterialTheme.typography.bodySmall)
+                    Text("Mensaje: ${solicitud.mensaje.ifBlank { "Sin mensaje" }}")
+                    ImagenesSolicitud(UsuarioViewModel.imagenesDe(solicitud))
+                    if (!debug) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = {
+                                if (viewModel.editarSolicitud(solicitud.id)) navController.navigate(Screen.CrearSolicitud.route) { launchSingleTop = true }
+                            }, modifier = Modifier.weight(1f)) { Text("Editar") }
+                            OutlinedButton(onClick = { solicitudAEliminar = solicitud }, modifier = Modifier.weight(1f)) { Text("Eliminar") }
                         }
                     }
-
-                    Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedButton(onClick = {
-                                if (viewModel.editarSolicitud(solicitud.id)) {navController.navigate(Screen.Registro.route) {launchSingleTop = true}}
-                            }, modifier = Modifier.weight(1f)){Text("Editar")}
-
-                        OutlinedButton(
-                            onClick = {solicitudAEliminar = solicitud},
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                        ) {Text("Eliminar")}
-                    }
                 }
             }
-        }
-        //este aviso aparece una sola vez
-        item {Text(text = "Guardado temporal: las solicitudes no se conservan al cerrar el proceso de la app.", style = MaterialTheme.typography.bodySmall)
         }
     }
-
-    //el diálogo queda fuera de LazyC
-    solicitudAEliminar?.let { solicitud -> AlertDialog(onDismissRequest = {solicitudAEliminar = null },
-            title = {Text("Eliminar solicitud")},
-            text = {Text("¿Quieres eliminar la solicitud de " + "${solicitud.nombre} para ${solicitud.modalidad}?")
-            },
+    solicitudAEliminar?.let { solicitud ->
+        AlertDialog(onDismissRequest = { solicitudAEliminar = null }, title = { Text("Eliminar solicitud") },
+            text = { Text("¿Quieres eliminar esta solicitud de ${solicitud.modalidad}?") },
             confirmButton = {
-                TextButton(onClick = {viewModel.eliminarSolicitud(solicitud.id)
-                    solicitudAEliminar = null}
-                ) {Text(text = "Eliminar",color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {solicitudAEliminar = null}
-                ) {Text("Cancelar")}
-            }
-        )
+                TextButton(onClick = { viewModel.eliminarSolicitud(solicitud.id); solicitudAEliminar = null }) { Text("Eliminar") }
+            }, dismissButton = { TextButton(onClick = { solicitudAEliminar = null }) { Text("Cancelar") } })
     }
 }

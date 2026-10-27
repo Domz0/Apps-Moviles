@@ -30,7 +30,7 @@ fun CatalogoScreen(viewModel: MainViewModel) {
     Muestra("Catálogo") {
         Text(text = "Productos con propósito", style= MaterialTheme.typography.titleLarge)
         Text(text= "Conoce productos elaborados por jóvenes y adultos de Alba Lab, en un espacio que impulsa sus habilidades y oportunidades.")
-        Text(text="¿Te interesa algún producto? Completa el formulario en «Quiero colaborar» y selecciona «Consulta por productos y servicios».")
+        Text(text="¿Quieres ayudar? Elige 'Crear solicitud' desde Mi perfil o 'Colaborar como invitado' en el menú.")
         Text(text = "Catálogo de referencia para fines académicos. Las solicitudes de esta app son demostrativas y no se envían a CORPALIV.", style = MaterialTheme.typography.bodySmall)
         // serian las noticias o colabs
         TextButton(onClick = { viewModel.navigateBack() }) { Text("Volver") }

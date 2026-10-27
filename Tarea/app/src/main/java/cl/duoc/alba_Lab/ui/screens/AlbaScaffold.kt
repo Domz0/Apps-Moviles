@@ -17,11 +17,13 @@ import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.R
 import cl.duoc.alba_Lab.ui.theme.LocalAlbaDarkTheme
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) -> Unit) {
+fun AlbaScaffold(viewModel: MainViewModel, usuarioViewModel: UsuarioViewModel, content: @Composable (PaddingValues) -> Unit) {
+    val sesion by usuarioViewModel.sesion.collectAsState()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -30,11 +32,16 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
         drawerContent = {
             ModalDrawerSheet {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    val opciones = listOf(
+                    val opciones = if (sesion == null) listOf(
                         "Registrar" to Screen.Registro,
                         "Iniciar" to Screen.Login,
+                        "Colaborar como invitado" to Screen.Invitado,
                         "Catálogo" to Screen.Catalogo,
-                        "Mi perfil" to Screen.Profile
+                        "Historial de solicitudes (debug)" to Screen.HistorialDebug
+                    ) else listOf(
+                        "Mi perfil" to Screen.Profile,
+                        "Catálogo" to Screen.Catalogo,
+                        "Historial de solicitudes (debug)" to Screen.HistorialDebug
                     )
                     opciones.forEach { (titulo, pantalla) ->
                         NavigationDrawerItem(
@@ -43,6 +50,7 @@ fun AlbaScaffold(viewModel: MainViewModel, content: @Composable (PaddingValues) 
                             onClick = {
                                 scope.launch {
                                     drawerState.close()
+                                    if (pantalla == Screen.Invitado) usuarioViewModel.nuevaSolicitud(invitado = true)
                                     viewModel.navigateTo(pantalla)
                                 }
                             }

@@ -19,11 +19,16 @@ import cl.duoc.alba_Lab.navigation.Screen
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 @Composable
 fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel, usuarioViewModel: UsuarioViewModel) {
     val estado by viewModel.estado.collectAsState()
     var errorSesion by remember { mutableStateOf<String?>(null) }
+    var iniciando by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier.fillMaxSize().imePadding()
@@ -41,6 +46,7 @@ fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel, usuario
             isError = estado.errorCorreo != null,
             supportingText = { estado.errorCorreo?.let { Text(it) } },
             singleLine = true,
+            enabled = !iniciando,
             modifier = Modifier.fillMaxWidth()
         )
         OutlinedTextField(
@@ -52,6 +58,7 @@ fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel, usuario
             isError = estado.errorClave != null,
             supportingText = { estado.errorClave?.let { Text(it) } },
             singleLine = true,
+            enabled = !iniciando,
             modifier = Modifier.fillMaxWidth()
         )
         Button(
@@ -59,22 +66,27 @@ fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel, usuario
                 errorSesion = null
                 viewModel.validarFormulario()
                 if (viewModel.estado.value.datosValidos) {
-                    if (usuarioViewModel.iniciarSesionSimulada(estado.correo, estado.clave)) {
-                        viewModel.onClaveChange("")
-                        mainViewModel.navigateTo(Screen.Profile)
-                    } else {
-                        errorSesion = "Revisa el correo registrado y la contraseña."
+                    iniciando = true
+                    scope.launch {
+                        try {
+                            if (usuarioViewModel.iniciarSesionSimulada(estado.correo, estado.clave)) {
+                                viewModel.onClaveChange("")
+                            } else {
+                                errorSesion = "Revisa el correo registrado y la contraseña."
+                            }
+                        } catch (e: CancellationException) { throw e
+                        } catch (e: Exception) { errorSesion = "No se pudo iniciar sesión. Intenta nuevamente."
+                        } finally { iniciando = false }
                     }
                 }
             },
+            enabled = !iniciando,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Iniciar sesión")
+            Text(if (iniciando) "Iniciando…" else "Iniciar sesión")
         }
 
         errorSesion?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        Text("Inicio de sesión de prueba. Los registros antiguos no tienen contraseña guardada.",
-            style = MaterialTheme.typography.bodySmall)
         TextButton(onClick = { mainViewModel.navigateBack() }) { Text("Volver") }
     }
 }

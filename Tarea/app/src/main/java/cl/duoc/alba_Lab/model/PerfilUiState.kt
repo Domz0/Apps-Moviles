@@ -10,5 +10,8 @@ data class PerfilUiState(
     val errorClave: String? = null,
     val mensaje: String? = null,
     val guardando: Boolean = false,
-    val revisionFoto: Int = 0
+    val revisionFoto: Int = 0,
+    val tipoCuenta: String = "",
+    val empresa: String = "",
+    val errorEmpresa: String? = null
 )

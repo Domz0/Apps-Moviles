@@ -17,7 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import cl.duoc.alba_Lab.data.FotoPerfilStorage
-import cl.duoc.alba_Lab.ui.components.ImagenInteligente
+import cl.duoc.alba_Lab.ui.components.FotoPerfil
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.CancellationException
@@ -26,8 +26,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun EditarPerfilScreen(mainViewModel: MainViewModel, viewModel: UsuarioViewModel) {
     val estado by viewModel.perfil.collectAsState()
-    val solicitudes by viewModel.solicitudes.collectAsState()
-    LaunchedEffect(solicitudes) { viewModel.cargarPerfil() }
+    LaunchedEffect(Unit) { viewModel.prepararEdicionPerfil() }
 
     val context = LocalContext.current.applicationContext
     val fotos = remember(context) { FotoPerfilStorage(context) }
@@ -62,7 +61,7 @@ fun EditarPerfilScreen(mainViewModel: MainViewModel, viewModel: UsuarioViewModel
     ) {
         Text("Editar perfil", style = MaterialTheme.typography.headlineMedium)
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            ImagenInteligente(foto)
+            FotoPerfil(foto)
             if (cargandoFoto) CircularProgressIndicator()
             TextButton(
                 onClick = {
@@ -80,11 +79,20 @@ fun EditarPerfilScreen(mainViewModel: MainViewModel, viewModel: UsuarioViewModel
         }
         OutlinedTextField(
             value = estado.nombre, onValueChange = viewModel::onPerfilNombreChange,
-            label = { Text("Nombre") }, singleLine = true,
+            label = { Text(if (estado.tipoCuenta == "Empresa") "Representante" else "Nombre") }, singleLine = true,
             isError = estado.errorNombre != null,
             supportingText = { estado.errorNombre?.let { Text(it) } },
             enabled = !estado.guardando, modifier = Modifier.fillMaxWidth()
         )
+        if (estado.tipoCuenta == "Empresa") {
+            OutlinedTextField(
+                value = estado.empresa, onValueChange = viewModel::onPerfilEmpresaChange,
+                label = { Text("Nombre de empresa") }, singleLine = true,
+                isError = estado.errorEmpresa != null,
+                supportingText = { estado.errorEmpresa?.let { Text(it) } },
+                enabled = !estado.guardando, modifier = Modifier.fillMaxWidth()
+            )
+        }
         OutlinedTextField(
             value = estado.correo, onValueChange = viewModel::onPerfilCorreoChange,
             label = { Text("Correo electrónico") }, singleLine = true,

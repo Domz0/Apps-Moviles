@@ -13,6 +13,4 @@ sealed class NavigationEvent {
     // Volver a la pantalla anterior.
     data object PopBackStack : NavigationEvent()
 
-    // Navegar hacia arriba en la jerarquía de la aplicación.
-    data object NavigateUp : NavigationEvent()
 }

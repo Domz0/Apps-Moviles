@@ -15,7 +15,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ImagenInteligente(imagen: Bitmap?) {
+fun FotoPerfil(imagen: Bitmap?) {
     val modifier = Modifier.size(128.dp).clip(CircleShape)
     if (imagen == null) {
         Icon(Icons.Default.Person, contentDescription = "Sin foto de perfil", modifier = modifier)

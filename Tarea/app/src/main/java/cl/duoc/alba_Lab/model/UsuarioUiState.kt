@@ -12,6 +12,10 @@ data class UsuarioUiState(
     val empresa: String = "",
     val modalidad: String = "",
     val mensaje: String = "",
+    val esInvitado: Boolean = false,
+    val imagenes: List<String> = emptyList(),
+    val procesando: Boolean = false,
+    val aviso: String? = null,
 
     val errores: UsuarioErrores = UsuarioErrores()
 )

@@ -2,6 +2,8 @@ package cl.duoc.alba_Lab.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
@@ -15,6 +17,8 @@ import cl.duoc.alba_Lab.ui.screens.LoginScreen
 import cl.duoc.alba_Lab.ui.screens.ProfileScreen
 import cl.duoc.alba_Lab.ui.screens.EditarPerfilScreen
 import cl.duoc.alba_Lab.ui.screens.RegistroScreen
+import cl.duoc.alba_Lab.ui.screens.CrearSolicitudScreen
+import cl.duoc.alba_Lab.data.FotoPerfilStorage
 import cl.duoc.alba_Lab.ui.screens.ResumenScreen
 import cl.duoc.alba_Lab.ui.screens.SettingsScreen
 import cl.duoc.alba_Lab.ui.screens.CatalogoScreen
@@ -29,17 +33,22 @@ import cl.duoc.alba_Lab.data.AlbaDataBase
 import cl.duoc.alba_Lab.data.SolicitudRepository
 
 @Composable
-fun AppNavigation(temaViewModel: TemaViewModel) {
-    val navController = rememberNavController()
-    val mainViewModel: MainViewModel = viewModel()
+private fun obtenerUsuarioViewModel(): UsuarioViewModel {
     val context = LocalContext.current.applicationContext
-    //Viewmodel compartido conectado a Room
-    val usuarioViewModel: UsuarioViewModel =  viewModel(factory= viewModelFactory {
+    return viewModel(factory= viewModelFactory {
         initializer {
             val database = AlbaDataBase.obtenerDatabase(context)
             val repository = SolicitudRepository(database.solicitudDao())
-            UsuarioViewModel(repository)}
+            UsuarioViewModel(repository, FotoPerfilStorage(context, "solicitud_"))}
     })
+}
+
+@Composable
+fun AppNavigation(temaViewModel: TemaViewModel, usuarioViewModel: UsuarioViewModel = obtenerUsuarioViewModel()) {
+    val navController = rememberNavController()
+    val mainViewModel: MainViewModel = viewModel()
+    val sesion by usuarioViewModel.sesion.collectAsState()
+    val formulario by usuarioViewModel.estado.collectAsState()
 
     LaunchedEffect(Unit) {
         mainViewModel.navigationEvents.collect { event ->
@@ -53,27 +62,53 @@ fun AppNavigation(temaViewModel: TemaViewModel) {
                     }
                 }
                 NavigationEvent.PopBackStack -> navController.popBackStack()
-                NavigationEvent.NavigateUp -> navController.navigateUp()
             }
         }
     }
 
     // faltan agregar un par de ventanas
-    AlbaScaffold(mainViewModel) { innerPadding ->
+    AlbaScaffold(mainViewModel, usuarioViewModel) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
             modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)
         ) {
             composable(Screen.Home.route) { HomeScreen(mainViewModel) }
-            composable(Screen.Login.route) { LoginScreen(mainViewModel, viewModel(), usuarioViewModel) }
-            composable(Screen.Profile.route) { ProfileScreen(mainViewModel, usuarioViewModel) }
-            composable(Screen.EditarPerfil.route) { EditarPerfilScreen(mainViewModel, usuarioViewModel) }
+            composable(Screen.Login.route) {
+                if (sesion == null) LoginScreen(mainViewModel, viewModel(), usuarioViewModel)
+                else LaunchedEffect(Unit) { navController.navigate(Screen.Profile.route) { popUpTo(Screen.Home.route); launchSingleTop = true } }
+            }
+            composable(Screen.Profile.route) {
+                if (sesion != null) ProfileScreen(mainViewModel, usuarioViewModel)
+                else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
+            }
+            composable(Screen.EditarPerfil.route) {
+                if (sesion != null) EditarPerfilScreen(mainViewModel, usuarioViewModel)
+                else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
+            }
             composable(Screen.Settings.route) { SettingsScreen(mainViewModel, temaViewModel) }
-            composable(Screen.Registro.route) { RegistroScreen(navController, usuarioViewModel) }
-            composable(Screen.Resumen.route) { ResumenScreen(navController, usuarioViewModel) }
+            composable(Screen.Registro.route) {
+                if (sesion == null) RegistroScreen(navController, usuarioViewModel)
+                else LaunchedEffect(Unit) { navController.navigate(Screen.Profile.route) { popUpTo(Screen.Home.route); launchSingleTop = true } }
+            }
+            composable(Screen.CrearSolicitud.route) {
+                if (sesion != null && !formulario.esInvitado) CrearSolicitudScreen(navController, usuarioViewModel)
+                else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
+            }
+            composable(Screen.Invitado.route) {
+                if (sesion == null && formulario.esInvitado) CrearSolicitudScreen(navController, usuarioViewModel)
+                else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
+            }
+            composable(Screen.Resumen.route) {
+                if (formulario.esInvitado || sesion != null) ResumenScreen(navController, usuarioViewModel)
+                else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
+            }
             composable(Screen.Catalogo.route) { CatalogoScreen(mainViewModel) }
-            composable(Screen.Solicitudes.route){SolicitudesScreen(navController,usuarioViewModel)}
+            composable(Screen.Solicitudes.route) {
+                if (sesion != null) SolicitudesScreen(navController, usuarioViewModel)
+                else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
+            }
+            composable(Screen.HistorialDebug.route) { SolicitudesScreen(navController, usuarioViewModel, debug = true) }
         }
     }
 }

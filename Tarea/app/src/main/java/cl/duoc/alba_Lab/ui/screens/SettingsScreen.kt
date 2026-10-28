@@ -11,13 +11,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import androidx.navigation.NavController
 import cl.duoc.alba_Lab.viewmodel.ModoTema
 import cl.duoc.alba_Lab.viewmodel.TemaViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun SettingsScreen(mainViewModel: MainViewModel, temaViewModel: TemaViewModel) {
+fun SettingsScreen(navController: NavController, temaViewModel: TemaViewModel) {
     val modoTema by temaViewModel.modo.collectAsState()
     var cargando by remember { mutableStateOf(true) }
 
@@ -54,7 +54,7 @@ fun SettingsScreen(mainViewModel: MainViewModel, temaViewModel: TemaViewModel) {
                     }
                 }
             }
-            TextButton(onClick = { mainViewModel.navigateBack() }) { Text("Volver") }
+            TextButton(onClick = { navController.popBackStack() }) { Text("Volver") }
         }
     }
 }

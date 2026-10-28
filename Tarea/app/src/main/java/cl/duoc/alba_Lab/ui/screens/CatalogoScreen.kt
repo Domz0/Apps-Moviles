@@ -19,10 +19,10 @@ import cl.duoc.alba_Lab.data.CatalogoProductos
 import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.ui.utils.obtenerWindowSizeClass
 import cl.duoc.alba_Lab.viewmodel.CarritoViewModel
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import androidx.navigation.NavController
 
 @Composable
-fun CatalogoScreen(viewModel: MainViewModel, carritoViewModel: CarritoViewModel) {
+fun CatalogoScreen(navController: NavController, carritoViewModel: CarritoViewModel) {
     //observa los productos agregados al carrito
     val carrito by carritoViewModel.carrito.collectAsState()
     val procesando by carritoViewModel.procesando.collectAsState()
@@ -54,7 +54,7 @@ fun CatalogoScreen(viewModel: MainViewModel, carritoViewModel: CarritoViewModel)
 
                 Text(text = "Catálogo de referencia para fines académicos. Las solicitudes de esta app son demostrativas y no se envían a CORPALIV.", style = MaterialTheme.typography.bodySmall)
 
-                TextButton(onClick = { viewModel.navigateBack() }) { Text("Volver") }
+                TextButton(onClick = { navController.popBackStack() }) { Text("Volver") }
 
                 if (carritoViewModel.conSesion) {
                     Text(text = "Unidades en el carrito: ${carrito.sumOf { it.cantidad }}", style = MaterialTheme.typography.titleMedium)
@@ -96,7 +96,7 @@ fun CatalogoScreen(viewModel: MainViewModel, carritoViewModel: CarritoViewModel)
                     //se agrega una unidad al carrito
                     Button(onClick = {
                             if (carritoViewModel.conSesion) carritoViewModel.agregarProducto(producto)
-                            else viewModel.navigateTo(Screen.Login)
+                            else navController.navigate(Screen.Login.route) { launchSingleTop = true }
                         },
                         enabled = !procesando,
                         modifier = Modifier.fillMaxWidth()

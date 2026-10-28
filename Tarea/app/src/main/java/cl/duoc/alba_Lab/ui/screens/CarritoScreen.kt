@@ -12,10 +12,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.viewmodel.CarritoViewModel
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import androidx.navigation.NavController
 
 @Composable
-fun CarritoScreen(mainViewModel: MainViewModel, viewModel: CarritoViewModel) {
+fun CarritoScreen(navController: NavController, viewModel: CarritoViewModel) {
     val carrito by viewModel.carrito.collectAsState()
     val procesando by viewModel.procesando.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -63,10 +63,10 @@ fun CarritoScreen(mainViewModel: MainViewModel, viewModel: CarritoViewModel) {
                 if (carrito.isNotEmpty()) {
                     OutlinedButton(onClick = { confirmarVaciado = true }, enabled = !procesando) { Text("Vaciar carrito") }
                 }
-                Button(onClick = { mainViewModel.navigateTo(Screen.Catalogo) }, modifier = Modifier.fillMaxWidth()) {
+                Button(onClick = { navController.navigate(Screen.Catalogo.route) { launchSingleTop = true } }, modifier = Modifier.fillMaxWidth()) {
                     Text("Seguir viendo catálogo")
                 }
-                TextButton(onClick = { mainViewModel.navigateBack() }) { Text("Volver") }
+                TextButton(onClick = { navController.popBackStack() }) { Text("Volver") }
             }
         }
     }

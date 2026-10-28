@@ -1,4 +1,4 @@
-﻿package cl.duoc.alba_Lab.ui.screens
+package cl.duoc.alba_Lab.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.Image
@@ -16,13 +16,13 @@ import androidx.compose.ui.unit.dp
 import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.R
 import cl.duoc.alba_Lab.ui.theme.LocalAlbaDarkTheme
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import androidx.navigation.NavController
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlbaScaffold(viewModel: MainViewModel, usuarioViewModel: UsuarioViewModel, content: @Composable (PaddingValues) -> Unit) {
+fun AlbaScaffold(navController: NavController, usuarioViewModel: UsuarioViewModel, content: @Composable (PaddingValues) -> Unit) {
     val sesion by usuarioViewModel.sesion.collectAsState()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -57,7 +57,7 @@ fun AlbaScaffold(viewModel: MainViewModel, usuarioViewModel: UsuarioViewModel, c
                                 scope.launch {
                                     drawerState.close()
                                     if (pantalla == Screen.Invitado) usuarioViewModel.nuevaSolicitud(invitado = true)
-                                    viewModel.navigateTo(pantalla)
+                                    navController.navigate(pantalla.route) { if (pantalla == Screen.Home) popUpTo(Screen.Home.route); launchSingleTop = true }
                                 }
                             }
                         )
@@ -88,7 +88,7 @@ fun AlbaScaffold(viewModel: MainViewModel, usuarioViewModel: UsuarioViewModel, c
                         }
                     }, // deje el boton para configurar, asi despues dejamos todo lo de accesibilidad aqui
                     actions = {
-                        IconButton(onClick = { viewModel.navigateTo(Screen.Settings) }) {
+                        IconButton(onClick = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } }) {
                             Icon(Icons.Default.Settings, contentDescription = "Abrir configuración")
                         }
                     }

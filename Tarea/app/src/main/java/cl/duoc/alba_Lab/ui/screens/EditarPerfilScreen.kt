@@ -1,4 +1,4 @@
-﻿package cl.duoc.alba_Lab.ui.screens
+package cl.duoc.alba_Lab.ui.screens
 
 import android.graphics.Bitmap
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -18,13 +18,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import cl.duoc.alba_Lab.data.FotoPerfilStorage
 import cl.duoc.alba_Lab.ui.components.FotoPerfil
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import androidx.navigation.NavController
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 @Composable
-fun EditarPerfilScreen(mainViewModel: MainViewModel, viewModel: UsuarioViewModel) {
+fun EditarPerfilScreen(navController: NavController, viewModel: UsuarioViewModel) {
     val estado by viewModel.perfil.collectAsState()
     LaunchedEffect(Unit) { viewModel.prepararEdicionPerfil() }
 
@@ -117,7 +117,7 @@ fun EditarPerfilScreen(mainViewModel: MainViewModel, viewModel: UsuarioViewModel
             Text(if (estado.guardando) "Guardando…" else "Guardar cambios")
         }
         AnimatedVisibility(estado.mensaje != null) { Text(estado.mensaje.orEmpty()) }
-        TextButton(onClick = { mainViewModel.navigateBack() }) { Text("Volver") }
+        TextButton(onClick = { navController.popBackStack() }) { Text("Volver") }
     }
 }
 

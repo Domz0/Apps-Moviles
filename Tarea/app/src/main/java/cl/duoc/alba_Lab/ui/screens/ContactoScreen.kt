@@ -13,10 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import androidx.navigation.NavController
 
 @Composable
-fun ContactoScreen(viewModel: MainViewModel) {
+fun ContactoScreen(navController: NavController) {
     val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
@@ -69,7 +69,7 @@ fun ContactoScreen(viewModel: MainViewModel) {
         }
 
         Text(text = "Estos botones abren aplicaciones externas. Tú decides si envías un correo o realizas una llamada.", style = MaterialTheme.typography.bodySmall)
-        TextButton(onClick = { viewModel.navigateBack() }) {
+        TextButton(onClick = { navController.popBackStack() }) {
             Text("Volver")
         }
     }

@@ -1,4 +1,4 @@
-﻿package cl.duoc.alba_Lab.ui.screens
+package cl.duoc.alba_Lab.ui.screens
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.*
@@ -13,11 +13,11 @@ import androidx.compose.ui.unit.dp
 import cl.duoc.alba_Lab.data.FotoPerfilStorage
 import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.ui.components.FotoPerfil
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import androidx.navigation.NavController
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 
 @Composable
-fun ProfileScreen(mainViewModel: MainViewModel, viewModel: UsuarioViewModel) {
+fun ProfileScreen(navController: NavController, viewModel: UsuarioViewModel) {
     val estado by viewModel.perfil.collectAsState()
     val sesion by viewModel.sesion.collectAsState()
     val cuenta = sesion ?: return
@@ -63,24 +63,24 @@ fun ProfileScreen(mainViewModel: MainViewModel, viewModel: UsuarioViewModel) {
             }
         }
         Button(
-            onClick = { mainViewModel.navigateTo(Screen.EditarPerfil) },
+            onClick = { navController.navigate(Screen.EditarPerfil.route) { launchSingleTop = true } },
             modifier = Modifier.fillMaxWidth()
         ) { Text("Editar perfil") }
         OutlinedButton(
-            onClick = { mainViewModel.navigateTo(Screen.Solicitudes) },
+            onClick = { navController.navigate(Screen.Solicitudes.route) { launchSingleTop = true } },
             modifier = Modifier.fillMaxWidth()
         ) { Text("Ver solicitudes") }
         OutlinedButton(
             onClick = {
                 // Limpia la solicitud anterior para crear una nueva, conservando el perfil.
                 viewModel.nuevaSolicitud()
-                mainViewModel.navigateTo(Screen.CrearSolicitud)
+                navController.navigate(Screen.CrearSolicitud.route) { launchSingleTop = true }
             },
             modifier = Modifier.fillMaxWidth()
         ) { Text("Crear solicitud") }
         TextButton(onClick = {
             viewModel.cerrarSesion()
-            mainViewModel.navigateTo(Screen.Home)
+            navController.navigate(Screen.Home.route) { popUpTo(Screen.Home.route); launchSingleTop = true }
         }) { Text("Cerrar sesión") }
     }
 }

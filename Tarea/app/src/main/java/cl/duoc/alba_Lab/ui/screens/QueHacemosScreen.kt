@@ -3,7 +3,7 @@ package cl.duoc.alba_Lab.ui.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import androidx.navigation.NavController
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,7 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import cl.duoc.alba_Lab.R
 
 @Composable
-fun QueHacemosScreen(viewModel: MainViewModel) {
+fun QueHacemosScreen(navController: NavController) {
     val iniciativas = listOf(
         "Taller de emprendimiento" to "Fortalece habilidades sociales, emocionales y laborales. Incluye el diseño y la autonomía y el aprendizaje colaborativo.",
         "Intermediación laboral" to "Apoya la inclusión laboral de personas con discapacidad múltiple, facilitando oportunidades para desarrollar sus habilidades en el trabajo.",
@@ -44,7 +44,7 @@ fun QueHacemosScreen(viewModel: MainViewModel) {
 
         Text(text = "Información adaptada de albalab.corpaliv.cl para este proyecto académico.", style = MaterialTheme.typography.bodySmall)
 
-        TextButton(onClick = { viewModel.navigateBack() }) {
+        TextButton(onClick = { navController.popBackStack() }) {
             Text("Volver")
         }
     }

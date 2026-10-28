@@ -16,11 +16,11 @@ import cl.duoc.alba_Lab.R
 import cl.duoc.alba_Lab.ui.theme.AlbaTheme
 import cl.duoc.alba_Lab.ui.theme.LocalAlbaDarkTheme
 import cl.duoc.alba_Lab.navigation.Screen
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import androidx.navigation.NavController
 
 @Composable
-fun HomeScreen(viewModel: MainViewModel) {
-    HomeScreenContent(onSettings = { viewModel.navigateTo(Screen.Settings) })
+fun HomeScreen(navController: NavController) {
+    HomeScreenContent(onSettings = { navController.navigate(Screen.Settings.route) { launchSingleTop = true } })
 }
 // define como se ve segun tamaño
 @Composable

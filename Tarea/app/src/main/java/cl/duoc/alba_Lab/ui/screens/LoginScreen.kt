@@ -13,7 +13,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import cl.duoc.alba_Lab.viewmodel.LoginViewModel
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
+import androidx.navigation.NavController
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 import cl.duoc.alba_Lab.navigation.Screen
 import androidx.compose.runtime.mutableStateOf
@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
 
 @Composable
-fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel, usuarioViewModel: UsuarioViewModel) {
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel, usuarioViewModel: UsuarioViewModel) {
     val estado by viewModel.estado.collectAsState()
     var errorSesion by remember { mutableStateOf<String?>(null) }
     var iniciando by remember { mutableStateOf(false) }
@@ -87,6 +87,6 @@ fun LoginScreen(mainViewModel: MainViewModel, viewModel: LoginViewModel, usuario
         }
 
         errorSesion?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        TextButton(onClick = { mainViewModel.navigateBack() }) { Text("Volver") }
+        TextButton(onClick = { navController.popBackStack() }) { Text("Volver") }
     }
 }

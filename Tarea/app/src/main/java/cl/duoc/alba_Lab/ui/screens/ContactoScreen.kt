@@ -19,7 +19,8 @@ import cl.duoc.alba_Lab.viewmodel.MainViewModel
 fun ContactoScreen(viewModel: MainViewModel) {
     val context = LocalContext.current
 
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(text = "Contacto", style = MaterialTheme.typography.headlineMedium)
         Text("Consulta los canales oficiales de Alba Lab.")
@@ -29,7 +30,8 @@ fun ContactoScreen(viewModel: MainViewModel) {
                 Text("contacto@albaconecta.cl")
 
                 Button(onClick = {
-                        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:contacto@albaconecta.cl")) //sendto con mailto solicita abrir una app de correo
+                        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:contacto@albaconecta.cl"))
+                    //sendto con mailto solicita abrir una app de correo
                         abrirAplicacion(context, intent)} //abre el correo sin enviar ningun mensaje automatico
                 ) {
                     Text("Abrir correo")
@@ -42,7 +44,8 @@ fun ContactoScreen(viewModel: MainViewModel) {
                 Text(text = "Teléfono", style = MaterialTheme.typography.titleMedium)
                 Text("+56 9 9876 5432")
 
-                Button(onClick = { val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:+56998765432")) //DIAL abre marcador con el numero listo y el usuario decide si realiza la llamada
+                Button(onClick = { val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:+56998765432"))
+                    //DIAL abre marcador con el numero listo y el usuario decide si realiza la llamada
                         abrirAplicacion(context, intent)}
                 ) {
                     Text("Abrir marcador")
@@ -54,8 +57,10 @@ fun ContactoScreen(viewModel: MainViewModel) {
             Column(modifier = Modifier.padding(16.dp),verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(text = "Dirección", style = MaterialTheme.typography.titleMedium)
                 Text("General Salvo 20, oficina 110, Providencia.")
-                Button(onClick = {val direccion = Uri.encode("General Salvo 20, Providencia, Chile") //se prepara la direccion para incluirla en la uri
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=$direccion")) //view con geo pide buscar la direccion en mapas
+                Button(onClick = {val direccion = Uri.encode("General Salvo 20, Providencia, Chile")
+                    //se prepara la direccion para incluirla en la uri
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=$direccion"))
+                    //view con geo pide buscar la direccion en mapas
                         abrirAplicacion(context, intent)}
                 ) {
                     Text("Ver ubicación")

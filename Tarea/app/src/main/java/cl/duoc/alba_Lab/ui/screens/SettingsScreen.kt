@@ -21,7 +21,6 @@ fun SettingsScreen(mainViewModel: MainViewModel, temaViewModel: TemaViewModel) {
     val modoTema by temaViewModel.modo.collectAsState()
     var cargando by remember { mutableStateOf(true) }
 
-    // Conserva la carga simulada del ejercicio de animaciones
     LaunchedEffect(Unit) {
         delay(1500)
         cargando = false

@@ -32,6 +32,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import cl.duoc.alba_Lab.data.AlbaDataBase
 import cl.duoc.alba_Lab.data.SolicitudRepository
 import cl.duoc.alba_Lab.viewmodel.CarritoViewModel
+import cl.duoc.alba_Lab.data.CarritoRepository
+import cl.duoc.alba_Lab.ui.screens.CarritoScreen
 import cl.duoc.alba_Lab.ui.screens.QueHacemosScreen
 import cl.duoc.alba_Lab.ui.screens.ContactoScreen
 
@@ -50,8 +52,17 @@ private fun obtenerUsuarioViewModel(): UsuarioViewModel {
 fun AppNavigation(temaViewModel: TemaViewModel, usuarioViewModel: UsuarioViewModel = obtenerUsuarioViewModel()) {
     val navController = rememberNavController()
     val mainViewModel: MainViewModel = viewModel()
-    val carritoViewModel: CarritoViewModel = viewModel()
     val sesion by usuarioViewModel.sesion.collectAsState()
+    val context = LocalContext.current.applicationContext
+    val cuentaId = sesion?.id
+    val carritoViewModel: CarritoViewModel = viewModel(
+        key = "carrito_${cuentaId ?: "invitado"}",
+        factory = viewModelFactory {
+            initializer {
+                CarritoViewModel(CarritoRepository(AlbaDataBase.obtenerDatabase(context).carritoDao()), cuentaId)
+            }
+        }
+    )
     val formulario by usuarioViewModel.estado.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -108,6 +119,10 @@ fun AppNavigation(temaViewModel: TemaViewModel, usuarioViewModel: UsuarioViewMod
                 else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
             }
             composable(Screen.Catalogo.route) { CatalogoScreen(mainViewModel, carritoViewModel) }
+            composable(Screen.Carrito.route) {
+                if (sesion != null) CarritoScreen(mainViewModel, carritoViewModel)
+                else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
+            }
             composable(Screen.QueHacemos.route) { QueHacemosScreen(mainViewModel) }
             composable(Screen.Contacto.route) { ContactoScreen(mainViewModel) }
             composable(Screen.Solicitudes.route) {

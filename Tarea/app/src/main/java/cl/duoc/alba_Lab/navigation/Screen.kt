@@ -13,9 +13,8 @@ sealed class Screen(val route: String) {
     data object HistorialDebug : Screen("historial_debug")
     data object Resumen : Screen("resumen")
     data object Catalogo : Screen("catalogo")
+    data object Carrito : Screen("carrito")
     data object QueHacemos: Screen("que_hacemos")
-
     data object Contacto : Screen("contacto")
-
     data object Solicitudes : Screen("solicitudes")
 }

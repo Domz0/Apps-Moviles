@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import cl.duoc.alba_Lab.R
-import cl.duoc.alba_Lab.model.Producto
+import cl.duoc.alba_Lab.data.CatalogoProductos
+import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.ui.utils.obtenerWindowSizeClass
 import cl.duoc.alba_Lab.viewmodel.CarritoViewModel
 import cl.duoc.alba_Lab.viewmodel.MainViewModel
@@ -25,6 +25,8 @@ import cl.duoc.alba_Lab.viewmodel.MainViewModel
 fun CatalogoScreen(viewModel: MainViewModel, carritoViewModel: CarritoViewModel) {
     //observa los productos agregados al carrito
     val carrito by carritoViewModel.carrito.collectAsState()
+    val procesando by carritoViewModel.procesando.collectAsState()
+    val error by carritoViewModel.error.collectAsState()
 
     //obtiene el tamaño de la ventana usando la función de la guía
     val windowSizeClass = obtenerWindowSizeClass()
@@ -37,9 +39,7 @@ fun CatalogoScreen(viewModel: MainViewModel, carritoViewModel: CarritoViewModel)
     }
 
     //productos y precios de referencia del catálogo
-    val elementos = listOf(
-        Producto(id = "difusor_aroma_100", nombre = "Difusor de aroma 100 ml", imagen = R.drawable.difusor_aroma, descripcion = "Aromatizador de ambiente en formato spray, en envase PET de 100 ml. Aromas publicados: Alba, coco lavanda, vainilla y verbena limón.", precio = 7500),
-        Producto(id = "difusor_colgante", nombre = "Difusor colgante", imagen = R.drawable.difusor_colgante, descripcion = "Aromatizador de 8 ml con piedras naturales y envase de vidrio. Pensado para espacios pequeños, como el auto o el clóset. Aromas publicados: Alba, coco lavanda, vainilla y verbena limón.", precio = 7500))
+    val elementos = CatalogoProductos.elementos
 
     //cuadrícula con desplazamiento y columnas adaptables
     LazyVerticalGrid(columns = GridCells.Fixed(columnas), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -56,9 +56,13 @@ fun CatalogoScreen(viewModel: MainViewModel, carritoViewModel: CarritoViewModel)
 
                 TextButton(onClick = { viewModel.navigateBack() }) { Text("Volver") }
 
-                Text(text = "Unidades en el carrito: ${carrito.sumOf { it.cantidad }}", style = MaterialTheme.typography.titleMedium)
-
-                Text(text = "Total presupuestado: \$${carritoViewModel.calcularTotal()}", style = MaterialTheme.typography.titleLarge)
+                if (carritoViewModel.conSesion) {
+                    Text(text = "Unidades en el carrito: ${carrito.sumOf { it.cantidad }}", style = MaterialTheme.typography.titleMedium)
+                    Text(text = "Total presupuestado: \$${carritoViewModel.calcularTotal()}", style = MaterialTheme.typography.titleLarge)
+                } else {
+                    Text("Inicia sesión para guardar productos en tu carrito.")
+                }
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
         }
 
@@ -90,22 +94,25 @@ fun CatalogoScreen(viewModel: MainViewModel, carritoViewModel: CarritoViewModel)
                     Text(text = "Precio de referencia: \$${producto.precio}")
 
                     //se agrega una unidad al carrito
-                    Button(onClick = {carritoViewModel.agregarProducto(producto)
+                    Button(onClick = {
+                            if (carritoViewModel.conSesion) carritoViewModel.agregarProducto(producto)
+                            else viewModel.navigateTo(Screen.Login)
                         },
+                        enabled = !procesando,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Agregar al carrito")
+                        Text(if (carritoViewModel.conSesion) "Agregar al carrito" else "Iniciar sesión para agregar")
                     }
 
                     //solo se muestra si hay unidades agregadas
                     if (cantidad > 0) { Text(text = "En el carrito: $cantidad")
 
-                        TextButton(onClick = { carritoViewModel.quitarUnidad(producto.id)}
+                        TextButton(onClick = { carritoViewModel.quitarUnidad(producto.id)}, enabled = !procesando
                         ) {
                             Text("Quitar una unidad")
                         }
 
-                        TextButton(onClick = {carritoViewModel.eliminarProducto(producto.id)}
+                        TextButton(onClick = {carritoViewModel.eliminarProducto(producto.id)}, enabled = !procesando
                         ) {
                             Text("Eliminar del carrito")
                         }

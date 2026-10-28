@@ -40,9 +40,11 @@ fun AlbaScaffold(viewModel: MainViewModel, usuarioViewModel: UsuarioViewModel, c
                         "Nuestros programas" to Screen.QueHacemos,
                         "Contacto" to Screen.Contacto,
                         "Historial de solicitudes (debug)" to Screen.HistorialDebug
+                    // logueado
                     ) else listOf(
                         "Mi perfil" to Screen.Profile,
                         "Catálogo" to Screen.Catalogo,
+                        "Carrito" to Screen.Carrito,
                         "Nuestros programas" to Screen.QueHacemos,
                         "Contacto" to Screen.Contacto,
                         "Historial de solicitudes (debug)" to Screen.HistorialDebug

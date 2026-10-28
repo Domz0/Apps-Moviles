@@ -7,7 +7,6 @@ data class UsuarioErrores(
     val clave: String? = null,
     val direccion: String? = null,
     val aceptaTerminos: String? = null,
-
     val tipoColaborador: String? = null,
     val empresa: String? = null,
     val modalidad: String? = null,

@@ -41,7 +41,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.compose.material3.windowSizeClass)
     implementation(libs.androidx.compose.material.icons.core)
-    implementation("androidx.datastore:datastore-preferences:1.2.1")
     implementation("androidx.compose.animation:animation")
 
 

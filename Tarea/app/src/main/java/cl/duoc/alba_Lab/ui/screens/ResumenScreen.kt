@@ -48,10 +48,8 @@ fun ResumenScreen(navController: NavController, viewModel: UsuarioViewModel) {
         Button(onClick = {
             if (guardando) return@Button
             guardando = true
-            // La navegación debe continuar en el hilo principal tras esperar a Room.
             scope.launch(Dispatchers.Main.immediate) {
                 try {
-                    // La misma carga simulada de 1,5 segundos que en Configuración.
                     delay(1500)
                     if (viewModel.guardarSolicitud()) {
                         navController.navigate(if (estado.esInvitado) Screen.HistorialDebug.route else Screen.Solicitudes.route) {

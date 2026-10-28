@@ -2,7 +2,6 @@ package cl.duoc.alba_Lab.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.ColumnInfo
 
 @Entity(tableName = "solicitudes") //cada solicitud sera una fila de la tabla
 data class Solicitud (
@@ -18,6 +17,6 @@ data class Solicitud (
     val aceptaTerminos: Boolean,
     val fechaCreacion: Long? = null,
     val cuentaId: String? = null,
-    @ColumnInfo(defaultValue = "'[]'") val imagenes: String = "[]"
+    val imagenes: String = "[]"
 
 )

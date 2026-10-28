@@ -17,6 +17,7 @@ import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.R
 import cl.duoc.alba_Lab.ui.theme.LocalAlbaDarkTheme
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.launch
 
@@ -24,6 +25,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun AlbaScaffold(navController: NavController, usuarioViewModel: UsuarioViewModel, content: @Composable (PaddingValues) -> Unit) {
     val sesion by usuarioViewModel.sesion.collectAsState()
+    val entradaActual by navController.currentBackStackEntryAsState()
+    val rutaActual = entradaActual?.destination?.route
+    val seccionActual = when (rutaActual) {
+        Screen.EditarPerfil.route, Screen.Solicitudes.route, Screen.CrearSolicitud.route -> Screen.Profile.route
+        Screen.Resumen.route -> if (sesion == null) Screen.Invitado.route else Screen.Profile.route
+        else -> rutaActual
+    }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -52,7 +60,7 @@ fun AlbaScaffold(navController: NavController, usuarioViewModel: UsuarioViewMode
                     opciones.forEach { (titulo, pantalla) ->
                         NavigationDrawerItem(
                             label = { Text(titulo) },
-                            selected = false,
+                            selected = seccionActual == pantalla.route,
                             onClick = {
                                 scope.launch {
                                     drawerState.close()

@@ -1,109 +1,117 @@
 package cl.duoc.alba_Lab.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import cl.duoc.alba_Lab.R
-import cl.duoc.alba_Lab.viewmodel.MainViewModel
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import cl.duoc.alba_Lab.model.Producto
+import cl.duoc.alba_Lab.ui.utils.obtenerWindowSizeClass
 import cl.duoc.alba_Lab.viewmodel.CarritoViewModel
-import androidx.compose.material3.Button
+import cl.duoc.alba_Lab.viewmodel.MainViewModel
 
 @Composable
 fun CatalogoScreen(viewModel: MainViewModel, carritoViewModel: CarritoViewModel) {
+    //observa los productos agregados al carrito
     val carrito by carritoViewModel.carrito.collectAsState()
+
+    //obtiene el tamaño de la ventana usando la función de la guía
+    val windowSizeClass = obtenerWindowSizeClass()
+
+    //cambia las columnas según el ancho disponible
+    val columnas = when (windowSizeClass.widthSizeClass) {
+        WindowWidthSizeClass.Compact -> 1
+        WindowWidthSizeClass.Medium -> 2
+        else -> 3
+    }
+
+    //productos y precios de referencia del catálogo
     val elementos = listOf(
-        Producto("difusor_aroma_100", "Difusor de aroma 100 ml",R.drawable.difusor_aroma, "Aromatizador de ambiente en formato spray, en envase PET de 100 ml. Aromas publicados: Alba, coco lavanda, vainilla y verbena limón.", precio = 7500),
-        Producto("difusor_colgante", "Difusor colgante",R.drawable.difusor_colgante, "Aromatizador de 8 ml con piedras naturales y envase de vidrio. Pensado para espacios pequeños, como el auto o el clóset. Aromas publicados: Alba, coco lavanda, vainilla y verbena limón.", precio = 7500))
-    Muestra("Catálogo") {
-        Text(text = "Productos con propósito", style= MaterialTheme.typography.titleLarge)
-        Text(text= "Conoce productos elaborados por jóvenes y adultos de Alba Lab, en un espacio que impulsa sus habilidades y oportunidades.")
-        Text(text="¿Quieres ayudar? Elige 'Crear solicitud' desde Mi perfil o 'Colaborar como invitado' en el menú.")
-        Text(text = "Catálogo de referencia para fines académicos. Las solicitudes de esta app son demostrativas y no se envían a CORPALIV.", style = MaterialTheme.typography.bodySmall)
-        // serian las noticias o colabs
-        TextButton(onClick = { viewModel.navigateBack() }) { Text("Volver") }
-        Text(text = "Unidades en el carrito: ${carrito.sumOf { it.cantidad }}", style= MaterialTheme.typography.titleMedium)
-        Text(text= "Total presupuestado: \$${carritoViewModel.calcularTotal()}", style= MaterialTheme.typography.titleLarge)
-        elementos.forEach { producto ->
-            val nombre = producto.nombre
-            val imagen= producto.imagen
-            val descripcion = producto.descripcion
-            var mostrarDetalles by rememberSaveable {mutableStateOf(false)}
-            Card(Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Image(
-                        painter = painterResource(imagen),
-                        contentDescription = nombre,
-                        modifier = Modifier.fillMaxWidth().height(150.dp),
-                        contentScale = ContentScale.Fit
-                    )
+        Producto(id = "difusor_aroma_100", nombre = "Difusor de aroma 100 ml", imagen = R.drawable.difusor_aroma, descripcion = "Aromatizador de ambiente en formato spray, en envase PET de 100 ml. Aromas publicados: Alba, coco lavanda, vainilla y verbena limón.", precio = 7500),
+        Producto(id = "difusor_colgante", nombre = "Difusor colgante", imagen = R.drawable.difusor_colgante, descripcion = "Aromatizador de 8 ml con piedras naturales y envase de vidrio. Pensado para espacios pequeños, como el auto o el clóset. Aromas publicados: Alba, coco lavanda, vainilla y verbena limón.", precio = 7500))
 
-                    Text(
-                        text = nombre,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    TextButton(onClick = {mostrarDetalles = !mostrarDetalles} ){
-                        Text(if(mostrarDetalles)"Ocultar detalles" else "Ver detalles")
+    //cuadrícula con desplazamiento y columnas adaptables
+    LazyVerticalGrid(columns = GridCells.Fixed(columnas), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = "Catálogo", style = MaterialTheme.typography.headlineMedium)
+                Text(text = "Productos con propósito", style = MaterialTheme.typography.titleLarge)
+
+                Text(text = "Conoce productos elaborados por jóvenes y adultos de Alba Lab, en un espacio que impulsa sus habilidades y oportunidades.")
+
+                Text(text = "¿Quieres ayudar? Elige 'Crear solicitud' desde Mi perfil o 'Colaborar como invitado' en el menú.")
+
+                Text(text = "Catálogo de referencia para fines académicos. Las solicitudes de esta app son demostrativas y no se envían a CORPALIV.", style = MaterialTheme.typography.bodySmall)
+
+                TextButton(onClick = { viewModel.navigateBack() }) { Text("Volver") }
+
+                Text(text = "Unidades en el carrito: ${carrito.sumOf { it.cantidad }}", style = MaterialTheme.typography.titleMedium)
+
+                Text(text = "Total presupuestado: \$${carritoViewModel.calcularTotal()}", style = MaterialTheme.typography.titleLarge)
+            }
+        }
+
+        //cada producto ocupa una celda y se identifica por su id
+        items(items = elementos, key = { it.id }) { producto ->
+            //conservamos si los detalles del producto están abiertos
+            var mostrarDetalles by rememberSaveable { mutableStateOf(false) }
+
+            //busca cuantas unidades de este producto hay en el carrito
+            val cantidad = carrito.find { it.producto.id == producto.id }?.cantidad ?: 0
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Image(painter = painterResource(producto.imagen), contentDescription = producto.nombre,
+                        modifier = Modifier.fillMaxWidth().height(150.dp), contentScale = ContentScale.Fit)
+                    Text(text = producto.nombre, style = MaterialTheme.typography.titleMedium)
+
+                    TextButton(onClick = { mostrarDetalles = !mostrarDetalles }
+                    ) {
+                        Text(if (mostrarDetalles) {
+                                "Ocultar detalles"
+                            } else {
+                                "Ver detalles"
+                            }
+                        )
                     }
-                    AnimatedVisibility(visible= mostrarDetalles) {
-                        Text(text = descripcion)
-                    }
+                    AnimatedVisibility(visible = mostrarDetalles) { Text(text = producto.descripcion) }
+
                     Text(text = "Precio de referencia: \$${producto.precio}")
-                    Button(onClick = {carritoViewModel.agregarProducto(producto)},
+
+                    //se agrega una unidad al carrito
+                    Button(onClick = {carritoViewModel.agregarProducto(producto)
+                        },
                         modifier = Modifier.fillMaxWidth()
-                    ){Text("Agregar al carrito")}
-                    val cantidad = carrito.find{it.producto.id == producto.id} ?.cantidad ?:0
-                    if (cantidad>0) {
-                        Text(text = "En el carrito: $cantidad")
-                        TextButton(onClick = { carritoViewModel.quitarUnidad(producto.id) }
-                        ) { Text("Quitar una unidad") }
-                        TextButton(onClick = {
-                            carritoViewModel.eliminarProducto(producto.id)
-                        }
-                        ) { Text("Eliminar del carrito") }
+                    ) {
+                        Text("Agregar al carrito")
                     }
 
+                    //solo se muestra si hay unidades agregadas
+                    if (cantidad > 0) { Text(text = "En el carrito: $cantidad")
+
+                        TextButton(onClick = { carritoViewModel.quitarUnidad(producto.id)}
+                        ) {
+                            Text("Quitar una unidad")
+                        }
+
+                        TextButton(onClick = {carritoViewModel.eliminarProducto(producto.id)}
+                        ) {
+                            Text("Eliminar del carrito")
+                        }
+                    }
                 }
             }
         }
-    }
-}
-@Composable
-private fun Muestra(titulo: String, contenido: @Composable ColumnScope.() -> Unit) {
-    MaterialTheme { Surface { Marco(titulo, contenido) } }
-}
-@Composable
-private fun Marco(titulo: String, contenido: @Composable ColumnScope.() -> Unit) {
-    Column(
-        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(titulo, style = MaterialTheme.typography.headlineMedium)
-        contenido()
     }
 }

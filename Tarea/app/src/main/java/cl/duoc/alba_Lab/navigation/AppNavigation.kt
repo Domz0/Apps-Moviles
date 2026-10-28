@@ -31,6 +31,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import cl.duoc.alba_Lab.data.AlbaDataBase
 import cl.duoc.alba_Lab.data.SolicitudRepository
+import cl.duoc.alba_Lab.viewmodel.CarritoViewModel
+import cl.duoc.alba_Lab.ui.screens.QueHacemosScreen
+import cl.duoc.alba_Lab.ui.screens.ContactoScreen
 
 @Composable
 private fun obtenerUsuarioViewModel(): UsuarioViewModel {
@@ -47,6 +50,7 @@ private fun obtenerUsuarioViewModel(): UsuarioViewModel {
 fun AppNavigation(temaViewModel: TemaViewModel, usuarioViewModel: UsuarioViewModel = obtenerUsuarioViewModel()) {
     val navController = rememberNavController()
     val mainViewModel: MainViewModel = viewModel()
+    val carritoViewModel: CarritoViewModel = viewModel()
     val sesion by usuarioViewModel.sesion.collectAsState()
     val formulario by usuarioViewModel.estado.collectAsState()
 
@@ -103,7 +107,9 @@ fun AppNavigation(temaViewModel: TemaViewModel, usuarioViewModel: UsuarioViewMod
                 if (formulario.esInvitado || sesion != null) ResumenScreen(navController, usuarioViewModel)
                 else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
             }
-            composable(Screen.Catalogo.route) { CatalogoScreen(mainViewModel) }
+            composable(Screen.Catalogo.route) { CatalogoScreen(mainViewModel, carritoViewModel) }
+            composable(Screen.QueHacemos.route) { QueHacemosScreen(mainViewModel) }
+            composable(Screen.Contacto.route) { ContactoScreen(mainViewModel) }
             composable(Screen.Solicitudes.route) {
                 if (sesion != null) SolicitudesScreen(navController, usuarioViewModel)
                 else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }

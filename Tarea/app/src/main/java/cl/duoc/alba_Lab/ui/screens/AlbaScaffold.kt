@@ -37,10 +37,14 @@ fun AlbaScaffold(viewModel: MainViewModel, usuarioViewModel: UsuarioViewModel, c
                         "Iniciar" to Screen.Login,
                         "Colaborar como invitado" to Screen.Invitado,
                         "Catálogo" to Screen.Catalogo,
+                        "Nuestros programas" to Screen.QueHacemos,
+                        "Contacto" to Screen.Contacto,
                         "Historial de solicitudes (debug)" to Screen.HistorialDebug
                     ) else listOf(
                         "Mi perfil" to Screen.Profile,
                         "Catálogo" to Screen.Catalogo,
+                        "Nuestros programas" to Screen.QueHacemos,
+                        "Contacto" to Screen.Contacto,
                         "Historial de solicitudes (debug)" to Screen.HistorialDebug
                     )
                     opciones.forEach { (titulo, pantalla) ->

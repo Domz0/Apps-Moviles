@@ -19,7 +19,7 @@ import kotlinx.coroutines.Dispatchers
 fun RegistroScreen(navController: NavController, viewModel: UsuarioViewModel) {
     val estado by viewModel.registro.collectAsState()
     val scope = rememberCoroutineScope()
-    Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
+    Column(Modifier.fillMaxSize().wrapContentWidth().widthIn(max = 600.dp).fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Crear cuenta", style = MaterialTheme.typography.headlineMedium)
         DatosPersonales(estado, true,

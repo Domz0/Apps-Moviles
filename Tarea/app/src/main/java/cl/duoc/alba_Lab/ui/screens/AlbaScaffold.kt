@@ -85,7 +85,7 @@ fun AlbaScaffold(navController: NavController, usuarioViewModel: UsuarioViewMode
                                 else R.drawable.wordmark_light
                             ),
                             contentDescription = "Alba Conecta",
-                            modifier = Modifier.width(150.dp).height(32.dp),
+                            modifier = Modifier.widthIn(max = 150.dp).fillMaxWidth().height(32.dp),
                             contentScale = ContentScale.Fit
                         )
                     },

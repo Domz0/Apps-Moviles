@@ -5,24 +5,28 @@ Aplicación móvil desarrollada para la asignatura Desarrollo de Aplicaciones M�
 Su finalidad es reunir información de CORPALIV y Alba Lab y facilitar que personas y empresas registren su interés en colaborar mediante donaciones, voluntariado, alianzas o consultas por productos y servicios.
 
 ## Integrantes
+
 - José Santander
 - Priscila Contreras
 - Grupo 10
 
 ## Funcionalidades actuales
-- Pantalla de inicio adaptable a distintos tamaños.
-- Navegación entre pantallas.
-- Formulario con datos del usuario y opciones de colaboración.
-- Validación de campos desde el ViewModel.
-- Resumen de los datos ingresados y opción para volver a editarlos.
+
+- Registro de personas y empresas, inicio de sesión simulado y edición del perfil.
+- Foto de perfil y archivos de imagen adjuntos desde la galería.
+- Creación de solicitudes con cuenta o como invitado, con validaciones y resumen.
+- Consulta, edición y eliminación de solicitudes propias e historial general de depuración.
+- Catálogo y carrito separado por cuenta, con cantidades y total de referencia.
+- Información de programas y contacto, menú lateral y selección de tema.
+- Almacenamiento local de cuentas, solicitudes y carritos, y pantallas adaptables con desplazamiento.
 
 ## Tecnologías
-Kotlin, Jetpack Compose, Material 3 y Navigation Compose, utilizando ViewModel y StateFlow para gestionar los datos.
 
-## Próximos avances
-Incorporar información de la organización, almacenamiento local, seguimiento de solicitudes, recursos nativos y animaciones.
+Kotlin, Jetpack Compose, Material 3 y Navigation Compose. ViewModel y StateFlow para gestionar el estado, Room (SQLite) para los datos locales y archivos internos para las imágenes.
 
-Continuará...
+## Ejecución
+
+Abrir la carpeta `Tarea` en Android Studio, sincronizar Gradle y ejecutar la aplicación en un emulador o dispositivo Android compatible.
 
 ---
-Proyecto académico en desarrollo. Se utilizan datos ficticios para las pruebas. Actualmente no se realizan pagos ni se envían solicitudes reales a la organización.
+Proyecto académico en desarrollo. El login es una simulación local; no se realizan pagos ni se envían solicitudes reales a la organización. Se utilizan datos ficticios para las pruebas.

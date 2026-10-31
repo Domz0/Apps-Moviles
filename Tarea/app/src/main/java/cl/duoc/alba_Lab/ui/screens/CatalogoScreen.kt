@@ -71,7 +71,7 @@ fun CatalogoScreen(navController: NavController, carritoViewModel: CarritoViewMo
             //conservamos si los detalles del producto están abiertos
             var mostrarDetalles by rememberSaveable { mutableStateOf(false) }
 
-            //busca cuantas unidades de este producto hay en el carrito
+            //busca cuantas unidades de este producto  hay en el carrito
             val cantidad = carrito.find { it.producto.id == producto.id }?.cantidad ?: 0
 
             Card(modifier = Modifier.fillMaxWidth()) {

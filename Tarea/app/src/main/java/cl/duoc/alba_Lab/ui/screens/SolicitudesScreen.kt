@@ -52,11 +52,11 @@ fun SolicitudesScreen(navController: NavController, viewModel: UsuarioViewModel,
                     Text("Mensaje: ${solicitud.mensaje.ifBlank { "Sin mensaje" }}")
                     ImagenesSolicitud(UsuarioViewModel.imagenesDe(solicitud))
                     if (!debug) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(onClick = {
                                 if (viewModel.editarSolicitud(solicitud.id)) navController.navigate(Screen.CrearSolicitud.route) { launchSingleTop = true }
-                            }, modifier = Modifier.weight(1f)) { Text("Editar") }
-                            OutlinedButton(onClick = { solicitudAEliminar = solicitud }, modifier = Modifier.weight(1f)) { Text("Eliminar") }
+                            }, modifier = Modifier.fillMaxWidth()) { Text("Editar") }
+                            OutlinedButton(onClick = { solicitudAEliminar = solicitud }, modifier = Modifier.fillMaxWidth()) { Text("Eliminar") }
                         }
                     }
                 }

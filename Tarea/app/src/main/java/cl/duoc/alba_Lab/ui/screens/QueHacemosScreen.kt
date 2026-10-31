@@ -2,6 +2,9 @@ package cl.duoc.alba_Lab.ui.screens
 
 
 import androidx.compose.runtime.Composable
+import android.content.res.Configuration
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.compose.foundation.layout.*
@@ -17,6 +20,7 @@ import cl.duoc.alba_Lab.R
 
 @Composable
 fun QueHacemosScreen(navController: NavController) {
+    val horizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val iniciativas = listOf(
         "Taller de emprendimiento" to "Fortalece habilidades sociales, emocionales y laborales. Incluye el diseño y la autonomía y el aprendizaje colaborativo.",
         "Intermediación laboral" to "Apoya la inclusión laboral de personas con discapacidad múltiple, facilitando oportunidades para desarrollar sus habilidades en el trabajo.",
@@ -29,15 +33,33 @@ fun QueHacemosScreen(navController: NavController) {
 
         iniciativas.forEach { (titulo, descripcion) ->
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (titulo == "Taller de emprendimiento"){
-                        Image(painter = painterResource(R.drawable.taller_emprendimiento),
+                if (horizontal && titulo == "Taller de emprendimiento") {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.taller_emprendimiento),
                             contentDescription = "Taller de emprendimiento de Alba Lab",
-                            modifier = Modifier.fillMaxWidth().height(180.dp),contentScale = ContentScale.Fit)
+                            modifier = Modifier.weight(1f).height(180.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(text = titulo, style = MaterialTheme.typography.titleMedium)
+                            Text(text = descripcion)
+                        }
                     }
-                    Text(text = titulo, style = MaterialTheme.typography.titleMedium)
-                    Text(text = descripcion)
+                } else {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (titulo == "Taller de emprendimiento") {
+                            Image(painter = painterResource(R.drawable.taller_emprendimiento),
+                                contentDescription = "Taller de emprendimiento de Alba Lab",
+                                modifier = Modifier.fillMaxWidth().height(180.dp), contentScale = ContentScale.Fit)
+                        }
+                        Text(text = titulo, style = MaterialTheme.typography.titleMedium)
+                        Text(text = descripcion)
+                    }
                 }
             }
         }

@@ -56,7 +56,7 @@ fun EditarPerfilScreen(navController: NavController, viewModel: UsuarioViewModel
     }
 
     Column(
-        Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
+        Modifier.fillMaxSize().wrapContentWidth().widthIn(max = 600.dp).fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Editar perfil", style = MaterialTheme.typography.headlineMedium)

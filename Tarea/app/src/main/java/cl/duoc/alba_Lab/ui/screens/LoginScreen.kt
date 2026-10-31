@@ -31,7 +31,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel, usuario
     val scope = rememberCoroutineScope()
 
     Column(
-        modifier = Modifier.fillMaxSize().imePadding()
+        modifier = Modifier.fillMaxSize().wrapContentWidth().widthIn(max = 600.dp).fillMaxWidth().imePadding()
             .verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

@@ -30,7 +30,7 @@ fun ProfileScreen(navController: NavController, viewModel: UsuarioViewModel) {
     }
 
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        Modifier.fillMaxSize().wrapContentWidth().widthIn(max = 600.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Mi perfil", style = MaterialTheme.typography.headlineMedium)

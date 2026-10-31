@@ -23,7 +23,7 @@ fun CrearSolicitudScreen(navController: NavController, viewModel: UsuarioViewMod
     val selector = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
         viewModel.adjuntarImagenes(it)
     }
-    Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
+    Column(Modifier.fillMaxSize().wrapContentWidth().widthIn(max = 600.dp).fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(if (estado.esInvitado) "Colaborar como invitado" else "Crear solicitud",
             style = MaterialTheme.typography.headlineMedium)

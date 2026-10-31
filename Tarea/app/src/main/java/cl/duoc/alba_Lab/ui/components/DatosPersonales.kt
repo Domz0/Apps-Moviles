@@ -35,10 +35,12 @@ fun DatosPersonales(
             isError = datos.errores.clave != null, supportingText = { datos.errores.clave?.let { Text(it) } })
     }
     Text("Tipo de cuenta o colaborador", style = MaterialTheme.typography.titleSmall)
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Column {
         listOf("Persona", "Empresa").forEach { tipo ->
-            RadioButton(datos.tipoColaborador == tipo, onClick = { onTipo(tipo) }, enabled = !datos.procesando)
-            Text(tipo)
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(datos.tipoColaborador == tipo, onClick = { onTipo(tipo) }, enabled = !datos.procesando)
+                Text(tipo, modifier = Modifier.weight(1f))
+            }
         }
     }
     datos.errores.tipoColaborador?.let { Text(it, color = MaterialTheme.colorScheme.error) }

@@ -29,7 +29,7 @@ fun ResumenScreen(navController: NavController, viewModel: UsuarioViewModel) {
         }
         return
     }
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+    Column(Modifier.fillMaxSize().wrapContentWidth().widthIn(max = 600.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Resumen de colaboración", style = MaterialTheme.typography.headlineMedium)
         Text("Revisa tu solicitud antes de guardarla,")

@@ -29,6 +29,7 @@ fun CarritoScreen(navController: NavController, viewModel: CarritoViewModel) {
             Text("Mi carrito", style = MaterialTheme.typography.headlineMedium)
             Text("Productos seleccionados (no se realiza compra).")
         }
+        //condicion de si hay contenido
         if (carrito.isEmpty()) item { Text("Carrito vacio :(") }
         items(carrito, key = { it.producto.id }) { item ->
             Card(Modifier.fillMaxWidth()) {
@@ -41,11 +42,11 @@ fun CarritoScreen(navController: NavController, viewModel: CarritoViewModel) {
                     Text("Precio de referencia: $${item.producto.precio}")
                     Text("Cantidad: ${item.cantidad}")
                     Text("Subtotal: $${item.subtotal}")
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = { viewModel.quitarUnidad(item.producto.id) }, enabled = !procesando, modifier = Modifier.weight(1f)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = { viewModel.quitarUnidad(item.producto.id) }, enabled = !procesando, modifier = Modifier.fillMaxWidth()) {
                             Text("Quitar unidad")
                         }
-                        OutlinedButton(onClick = { viewModel.agregarProducto(item.producto) }, enabled = !procesando, modifier = Modifier.weight(1f)) {
+                        OutlinedButton(onClick = { viewModel.agregarProducto(item.producto) }, enabled = !procesando, modifier = Modifier.fillMaxWidth()) {
                             Text("Agregar unidad")
                         }
                     }

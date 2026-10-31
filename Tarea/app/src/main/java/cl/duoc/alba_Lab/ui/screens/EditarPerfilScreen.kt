@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import cl.duoc.alba_Lab.data.FotoPerfilStorage
+import cl.duoc.alba_Lab.data.ImagenStorage
 import cl.duoc.alba_Lab.ui.components.FotoPerfil
 import androidx.navigation.NavController
 import cl.duoc.alba_Lab.viewmodel.UsuarioViewModel
@@ -29,7 +29,7 @@ fun EditarPerfilScreen(navController: NavController, viewModel: UsuarioViewModel
     LaunchedEffect(Unit) { viewModel.prepararEdicionPerfil() }
 
     val context = LocalContext.current.applicationContext
-    val fotos = remember(context) { FotoPerfilStorage(context) }
+    val fotos = remember(context) { ImagenStorage(context) }
     val scope = rememberCoroutineScope()
     var cargandoFoto by remember { mutableStateOf(false) }
     val foto by produceState<Bitmap?>(null, estado.id, estado.revisionFoto) {

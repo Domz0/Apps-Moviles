@@ -14,15 +14,16 @@ import cl.duoc.alba_Lab.model.CarritoGuardado
     exportSchema = false
 )
 abstract class AlbaDataBase : RoomDatabase() {
-    abstract fun carritoDao(): CarritoDao
-    abstract fun solicitudDao(): SolicitudDao //permite acceder a las operaciones que creamos
+    abstract fun cuentaDao(): CuentaDao //cuentas creadas
+    abstract fun carritoDao(): CarritoDao // lo que hay en el carrito
+    abstract fun solicitudDao(): SolicitudDao // maneja solicitudes
     companion object{
-        @Volatile
+        @Volatile //nos permite acceder desde cualquier hilo
         private var instancia: AlbaDataBase?= null
         fun obtenerDatabase(context: Context): AlbaDataBase{ //crea la bd una vez y reutiliza la instancia
             return instancia ?: synchronized(this){
-                val nuevaInstancia= Room.databaseBuilder(context.applicationContext, AlbaDataBase::class.java,"alba_database")
-                    // Como en el ejemplo: recrea las tablas si cambia la versión sin migración.
+                val nuevaInstancia= Room.databaseBuilder(context.applicationContext,
+                    AlbaDataBase::class.java,"alba_database")
                     .fallbackToDestructiveMigration().build()
                 instancia = nuevaInstancia
                 nuevaInstancia

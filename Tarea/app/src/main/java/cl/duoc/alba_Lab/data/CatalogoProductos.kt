@@ -3,7 +3,7 @@ package cl.duoc.alba_Lab.data
 import cl.duoc.alba_Lab.R
 import cl.duoc.alba_Lab.model.Producto
 
-// Catálogo compartido por la tienda y el carrito; se guardan los ID, no los recursos Android.
+// CAtalogo
 object CatalogoProductos {
     val elementos = listOf(
         Producto(id = "difusor_aroma_100",

@@ -18,7 +18,7 @@ import cl.duoc.alba_Lab.ui.screens.ProfileScreen
 import cl.duoc.alba_Lab.ui.screens.EditarPerfilScreen
 import cl.duoc.alba_Lab.ui.screens.RegistroScreen
 import cl.duoc.alba_Lab.ui.screens.CrearSolicitudScreen
-import cl.duoc.alba_Lab.data.FotoPerfilStorage
+import cl.duoc.alba_Lab.data.ImagenStorage
 import cl.duoc.alba_Lab.ui.screens.ResumenScreen
 import cl.duoc.alba_Lab.ui.screens.SettingsScreen
 import cl.duoc.alba_Lab.ui.screens.CatalogoScreen
@@ -30,6 +30,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import cl.duoc.alba_Lab.data.AlbaDataBase
 import cl.duoc.alba_Lab.data.SolicitudRepository
+import cl.duoc.alba_Lab.data.CuentaRepository
 import cl.duoc.alba_Lab.viewmodel.CarritoViewModel
 import cl.duoc.alba_Lab.data.CarritoRepository
 import cl.duoc.alba_Lab.ui.screens.CarritoScreen
@@ -43,7 +44,8 @@ private fun obtenerUsuarioViewModel(): UsuarioViewModel {
         initializer {
             val database = AlbaDataBase.obtenerDatabase(context)
             val repository = SolicitudRepository(database.solicitudDao())
-            UsuarioViewModel(repository, FotoPerfilStorage(context, "solicitud_"))}
+            val cuentaRepository = CuentaRepository(database.cuentaDao())
+            UsuarioViewModel(repository, cuentaRepository, ImagenStorage(context, "solicitud_"))}
     })
 }
 

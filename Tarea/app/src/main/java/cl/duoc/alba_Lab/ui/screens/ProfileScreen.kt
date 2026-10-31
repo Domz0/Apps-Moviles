@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import cl.duoc.alba_Lab.data.FotoPerfilStorage
+import cl.duoc.alba_Lab.data.ImagenStorage
 import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.ui.components.FotoPerfil
 import androidx.navigation.NavController
@@ -23,7 +23,7 @@ fun ProfileScreen(navController: NavController, viewModel: UsuarioViewModel) {
     val cuenta = sesion ?: return
 
     val context = LocalContext.current.applicationContext
-    val fotos = remember(context) { FotoPerfilStorage(context) }
+    val fotos = remember(context) { ImagenStorage(context) }
     val foto by produceState<Bitmap?>(null, cuenta.id, estado.revisionFoto) {
         value = null
         value = fotos.cargar(cuenta.id)

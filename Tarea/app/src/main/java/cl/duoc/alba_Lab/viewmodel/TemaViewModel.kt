@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+//definimos el tema default leyendo la configuracion del telefono
 enum class ModoTema(val titulo: String) {
     SISTEMA("Sistema"),
     CLARO("Claro"),

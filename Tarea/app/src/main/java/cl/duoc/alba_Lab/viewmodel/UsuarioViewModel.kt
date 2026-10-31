@@ -1,11 +1,12 @@
-﻿package cl.duoc.alba_Lab.viewmodel
+package cl.duoc.alba_Lab.viewmodel
 
 import android.net.Uri
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cl.duoc.alba_Lab.data.FotoPerfilStorage
+import cl.duoc.alba_Lab.data.ImagenStorage
 import cl.duoc.alba_Lab.data.SolicitudRepository
+import cl.duoc.alba_Lab.data.CuentaRepository
 import cl.duoc.alba_Lab.model.*
 import java.util.Locale
 import java.util.UUID
@@ -17,7 +18,8 @@ import org.json.JSONArray
 // Estado compartido, con cuentas y solicitudes separadas. La sesión sigue siendo local y de prueba.
 class UsuarioViewModel(
     private val repository: SolicitudRepository,
-    private val fotos: FotoPerfilStorage
+    private val cuentaRepository: CuentaRepository,
+    private val fotos: ImagenStorage
 ) : ViewModel() {
     private val _estado = MutableStateFlow(UsuarioUiState())
     val estado = _estado.asStateFlow()
@@ -67,14 +69,14 @@ class UsuarioViewModel(
         _registro.update { it.copy(procesando = true) }
         return try {
             val correo = correoNormalizado(datos.correo)
-            if (repository.buscarCuenta(correo) != null) {
+            if (cuentaRepository.buscarCuenta(correo) != null) {
                 _registro.update { it.copy(errores = it.errores.copy(correo = "Este correo ya está registrado")) }
                 false
             } else {
                 val cuenta = Cuenta(UUID.randomUUID().toString(), datos.nombre.trim(), correo,
                     datos.tipoColaborador, if (datos.tipoColaborador == "Empresa") datos.empresa.trim() else "",
                     direccion = datos.direccion.trim(), aceptaTerminos = datos.aceptaTerminos)
-                repository.crearCuenta(cuenta)
+                cuentaRepository.crearCuenta(cuenta)
                 clavesTemporales[cuenta.id] = datos.clave
                 abrirSesion(cuenta, datos.clave)
                 _registro.value = UsuarioUiState()
@@ -89,7 +91,7 @@ class UsuarioViewModel(
 
     suspend fun iniciarSesionSimulada(correo: String, clave: String): Boolean {
         if (clave.isBlank()) return false
-        val cuenta = repository.buscarCuenta(correoNormalizado(correo)) ?: return false
+        val cuenta = cuentaRepository.buscarCuenta(correoNormalizado(correo)) ?: return false
         val conocida = clavesTemporales[cuenta.id]
         if (conocida != null && conocida != clave) return false
         // Igual que en el prototipo anterior, las contraseñas solo viven durante el proceso.
@@ -142,13 +144,13 @@ class UsuarioViewModel(
         viewModelScope.launch {
             try {
                 val correo = correoNormalizado(datos.correo)
-                val otraCuenta = repository.buscarCuenta(correo)
+                val otraCuenta = cuentaRepository.buscarCuenta(correo)
                 if (otraCuenta != null && otraCuenta.id != cuenta.id) {
                     _perfil.update { it.copy(errorCorreo = "Este correo ya está registrado") }
                 } else {
                     val actualizada = cuenta.copy(nombre = datos.nombre.trim(), correo = correo,
                         empresa = if (cuenta.tipo == "Empresa") datos.empresa.trim() else "")
-                    repository.actualizarCuenta(actualizada)
+                    cuentaRepository.actualizarCuenta(actualizada)
                     if (_sesion.value?.id == cuenta.id) {
                         _sesion.value = actualizada
                         clavesTemporales[cuenta.id] = datos.clave

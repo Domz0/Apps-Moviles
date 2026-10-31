@@ -12,12 +12,12 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import cl.duoc.alba_Lab.data.FotoPerfilStorage
+import cl.duoc.alba_Lab.data.ImagenStorage
 
 @Composable
 fun ImagenesSolicitud(imagenes: List<String>, onQuitar: ((String) -> Unit)? = null) {
     val context = LocalContext.current.applicationContext
-    val storage = remember(context) { FotoPerfilStorage(context, "solicitud_") }
+    val storage = remember(context) { ImagenStorage(context, "solicitud_") }
     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         items(imagenes, key = { it }) { id ->
             val bitmap by produceState<Bitmap?>(null, id) { value = storage.cargar(id) }

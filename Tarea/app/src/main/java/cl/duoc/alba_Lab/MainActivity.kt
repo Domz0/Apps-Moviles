@@ -12,7 +12,7 @@ import cl.duoc.alba_Lab.ui.theme.AlbaTheme
 import cl.duoc.alba_Lab.viewmodel.ModoTema
 import cl.duoc.alba_Lab.viewmodel.TemaViewModel
 
-// Punto de entrada: aplica el tema e inicia la navegación de la aplicación.
+// inicio :)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

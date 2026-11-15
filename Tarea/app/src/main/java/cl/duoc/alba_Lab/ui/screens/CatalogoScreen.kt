@@ -20,9 +20,13 @@ import cl.duoc.alba_Lab.navigation.Screen
 import cl.duoc.alba_Lab.ui.utils.obtenerWindowSizeClass
 import cl.duoc.alba_Lab.viewmodel.CarritoViewModel
 import androidx.navigation.NavController
-
+import cl.duoc.alba_Lab.viewmodel.CatalogoWebViewModel
+import cl.duoc.alba_Lab.model.Producto
+import cl.duoc.alba_Lab.viewmodel.CatalogoWebEstado
 @Composable
-fun CatalogoScreen(navController: NavController, carritoViewModel: CarritoViewModel) {
+fun CatalogoScreen(navController: NavController, carritoViewModel: CarritoViewModel, catalogoWebViewModel: CatalogoWebViewModel) {
+    //obs estado de la consulta a la api
+    val estadoWeb by catalogoWebViewModel.estado.collectAsState()
     //observa los productos agregados al carrito
     val carrito by carritoViewModel.carrito.collectAsState()
     val procesando by carritoViewModel.procesando.collectAsState()
@@ -38,8 +42,23 @@ fun CatalogoScreen(navController: NavController, carritoViewModel: CarritoViewMo
         else -> 3
     }
 
-    //productos y precios de referencia del catálogo
-    val elementos = CatalogoProductos.elementos
+    // Carga los productos al entrar al catálogo.
+    LaunchedEffect(catalogoWebViewModel) {
+        catalogoWebViewModel.cargar()
+    }
+    //se usa los datos de la api y se conserva el ID y la foto del producto local
+    val elementos = when (val estado = estadoWeb) {is CatalogoWebEstado.Disponible -> estado.productos.mapNotNull {remoto ->
+            val idLocal = when (remoto.id) {
+                1 -> "difusor_aroma_100"
+                2 -> "difusor_colgante"
+                else -> return@mapNotNull null
+            }
+            val local = CatalogoProductos.elementos.find {it.id == idLocal}
+                ?: return@mapNotNull null
+            Producto(id = local.id, nombre = remoto.nombre, imagen = local.imagen, descripcion = remoto.descripcion, precio = remoto.precio)
+        }
+        else -> emptyList()
+    }
 
     //cuadrícula con desplazamiento y columnas adaptables
     LazyVerticalGrid(columns = GridCells.Fixed(columnas), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -65,6 +84,17 @@ fun CatalogoScreen(navController: NavController, carritoViewModel: CarritoViewMo
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
         }
+        //muestra el estado de la consulta en una filita de ancho completo
+            if (elementos.isEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    when (estadoWeb) {CatalogoWebEstado.Inicial, CatalogoWebEstado.Cargando -> Text("Cargando catálogo…")
+                        CatalogoWebEstado.Error -> Column {Text("No se pudo cargar el catálogo.")
+                            TextButton(onClick = catalogoWebViewModel::cargar) {Text("Reintentar")}
+                        }
+                        is CatalogoWebEstado.Disponible -> Text("No hay productos disponibles.")
+                    }
+                }
+            }
 
         //cada producto ocupa una celda y se identifica por su id
         items(items = elementos, key = { it.id }) { producto ->
@@ -77,7 +107,9 @@ fun CatalogoScreen(navController: NavController, carritoViewModel: CarritoViewMo
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Image(painter = painterResource(producto.imagen), contentDescription = producto.nombre,
-                        modifier = Modifier.fillMaxWidth().height(150.dp), contentScale = ContentScale.Fit)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp), contentScale = ContentScale.Fit)
                     Text(text = producto.nombre, style = MaterialTheme.typography.titleMedium)
 
                     TextButton(onClick = { mostrarDetalles = !mostrarDetalles }

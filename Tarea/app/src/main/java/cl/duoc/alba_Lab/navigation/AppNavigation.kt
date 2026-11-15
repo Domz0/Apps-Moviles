@@ -36,6 +36,9 @@ import cl.duoc.alba_Lab.data.CarritoRepository
 import cl.duoc.alba_Lab.ui.screens.CarritoScreen
 import cl.duoc.alba_Lab.ui.screens.QueHacemosScreen
 import cl.duoc.alba_Lab.ui.screens.ContactoScreen
+import cl.duoc.alba_Lab.data.AlbaLabApi
+import cl.duoc.alba_Lab.data.CatalogoWebRepository
+import cl.duoc.alba_Lab.viewmodel.CatalogoWebViewModel
 
 @Composable
 private fun obtenerUsuarioViewModel(): UsuarioViewModel {
@@ -101,7 +104,10 @@ fun AppNavigation(temaViewModel: TemaViewModel, usuarioViewModel: UsuarioViewMod
                 if (formulario.esInvitado || sesion != null) ResumenScreen(navController, usuarioViewModel)
                 else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
             }
-            composable(Screen.Catalogo.route) { CatalogoScreen(navController, carritoViewModel) }
+            composable(Screen.Catalogo.route) {val catalogoWebViewModel: CatalogoWebViewModel = viewModel(
+                    factory = viewModelFactory {initializer {CatalogoWebViewModel(CatalogoWebRepository(AlbaLabApi.catalogo))}})
+                CatalogoScreen(navController, carritoViewModel, catalogoWebViewModel)
+            }
             composable(Screen.Carrito.route) {
                 if (sesion != null) CarritoScreen(navController, carritoViewModel)
                 else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }

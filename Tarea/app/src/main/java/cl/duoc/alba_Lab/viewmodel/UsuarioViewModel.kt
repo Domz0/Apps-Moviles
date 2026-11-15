@@ -14,6 +14,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.json.JSONArray
+import cl.duoc.alba_Lab.data.AlbaLabApi
+import cl.duoc.alba_Lab.data.CatalogoWebRepository
 
 // Estado compartido, con cuentas y solicitudes separadas. La sesión sigue siendo local y de prueba.
 class UsuarioViewModel(
@@ -21,6 +23,7 @@ class UsuarioViewModel(
     private val cuentaRepository: CuentaRepository,
     private val fotos: ImagenStorage
 ) : ViewModel() {
+    private val repositorioWeb = CatalogoWebRepository(AlbaLabApi.catalogo)
     private val _estado = MutableStateFlow(UsuarioUiState())
     val estado = _estado.asStateFlow()
     private val _registro = MutableStateFlow(UsuarioUiState())
@@ -229,6 +232,12 @@ class UsuarioViewModel(
         val cuenta = if (datos.esInvitado) null else _sesion.value
         _estado.update { it.copy(procesando = true) }
         return try {
+            if (datos.esInvitado) {val mensaje = datos.mensaje.trim()
+                if (mensaje.isEmpty() || mensaje.length > 1000) {informarSolicitud("Escribe un mensaje de entre 1 y 1000 caracteres.")
+                    return false }
+                val enviado = repositorioWeb.enviarSolicitudInvitado(datos.modalidad, mensaje)
+                if (!enviado) {informarSolicitud("No se pudo enviar la solicitud. Intenta nuevamente.")}
+                return enviado}
             val id = idSolicitudActual ?: UUID.randomUUID().toString()
             val solicitud = Solicitud(id, cuenta?.nombre ?: datos.nombre.trim(),
                 cuenta?.correo ?: correoNormalizado(datos.correo), cuenta?.direccion.orEmpty(), cuenta?.tipo ?: datos.tipoColaborador,

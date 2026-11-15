@@ -17,23 +17,36 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import cl.duoc.alba_Lab.R
-
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import cl.duoc.alba_Lab.viewmodel.ProgramasEstado
+import cl.duoc.alba_Lab.viewmodel.ProgramasViewModel
 @Composable
 fun QueHacemosScreen(navController: NavController) {
     val horizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val iniciativas = listOf(
-        "Taller de emprendimiento" to "Fortalece habilidades sociales, emocionales y laborales. Incluye el diseño y la autonomía y el aprendizaje colaborativo.",
-        "Intermediación laboral" to "Apoya la inclusión laboral de personas con discapacidad múltiple, facilitando oportunidades para desarrollar sus habilidades en el trabajo.",
-        "Asesorías y capacitaciones" to "Acerca la inclusión a empresas y organizaciones mediante asesorías, formación y experiencias de trabajo colaborativo con participantes de Alba Lab.")
+    val programasViewModel: ProgramasViewModel = viewModel()
+    val estado by programasViewModel.estado.collectAsState()
+    val programas = (estado as? ProgramasEstado.Disponible)?.programas.orEmpty()
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)){
         Text(text = "Nuestros programas", style= MaterialTheme.typography.headlineMedium)
         Text(text = "Conoce las iniciativas de Alba Lab para impulsar la formación, la participación y las oportunidades laborales.")
 
-        iniciativas.forEach { (titulo, descripcion) ->
+        when (estado) {ProgramasEstado.Cargando -> Text("Cargando programas…")
+            ProgramasEstado.Error -> {Text("No se pudieron cargar los programas.")
+                TextButton(onClick = programasViewModel::cargar) {Text("Reintentar") }
+            }
+            is ProgramasEstado.Disponible -> {
+                if (programas.isEmpty()) Text("No hay programas disponibles.") }
+        }
+        programas.forEach { programa ->
+            val titulo = programa.nombre
+            val descripcion = programa.descripcion
+            val esTaller = programa.id == "taller-emprendimiento"
             Card(modifier = Modifier.fillMaxWidth()) {
-                if (horizontal && titulo == "Taller de emprendimiento") {
+                if (horizontal && esTaller) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),

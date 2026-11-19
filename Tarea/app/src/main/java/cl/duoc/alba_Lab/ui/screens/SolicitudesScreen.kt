@@ -20,6 +20,8 @@ import java.util.Locale
 fun SolicitudesScreen(navController: NavController, viewModel: UsuarioViewModel, debug: Boolean = false) {
     val todas by viewModel.solicitudes.collectAsState()
     val cuenta by viewModel.sesion.collectAsState()
+    val estado by viewModel.estado.collectAsState()
+    LaunchedEffect(cuenta?.id, debug) {if (!debug && cuenta != null) {viewModel.cargarSolicitudes()}}
     val solicitudes = if (debug) todas else viewModel.solicitudesDeCuenta(todas, cuenta)
     val formatoFecha = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
     var solicitudAEliminar by remember { mutableStateOf<Solicitud?>(null) }
@@ -35,6 +37,13 @@ fun SolicitudesScreen(navController: NavController, viewModel: UsuarioViewModel,
                     viewModel.nuevaSolicitud()
                     navController.navigate(Screen.CrearSolicitud.route) { launchSingleTop = true }
                 }, modifier = Modifier.fillMaxWidth()) { Text("Nueva solicitud") }
+            }
+        }
+        if (!debug) {
+            item {Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    estado.aviso?.let { aviso -> Text(text = aviso, color = MaterialTheme.colorScheme.error)}
+                    TextButton(onClick = { viewModel.cargarSolicitudes() }) {Text("Actualizar solicitudes")}
+                }
             }
         }
         if (solicitudes.isEmpty()) item { Text("Todavía no hay solicitudes guardadas.") }

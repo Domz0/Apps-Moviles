@@ -16,6 +16,9 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import cl.duoc.alba_Lab.data.AlbaLabApi
 import cl.duoc.alba_Lab.data.CatalogoWebRepository
+import cl.duoc.alba_Lab.data.CuentasWebRepository
+import retrofit2.HttpException
+import cl.duoc.alba_Lab.data.SolicitudCuentaWeb
 
 // Estado compartido, con cuentas y solicitudes separadas. La sesión sigue siendo local y de prueba.
 class UsuarioViewModel(
@@ -24,6 +27,7 @@ class UsuarioViewModel(
     private val fotos: ImagenStorage
 ) : ViewModel() {
     private val repositorioWeb = CatalogoWebRepository(AlbaLabApi.catalogo)
+    private val cuentasWeb = CuentasWebRepository()
     private val _estado = MutableStateFlow(UsuarioUiState())
     val estado = _estado.asStateFlow()
     private val _registro = MutableStateFlow(UsuarioUiState())
@@ -32,7 +36,8 @@ class UsuarioViewModel(
     val sesion = _sesion.asStateFlow()
     private val _perfil = MutableStateFlow(PerfilUiState())
     val perfil = _perfil.asStateFlow()
-    val solicitudes = repository.solicitudes.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    private val _solicitudesWeb = MutableStateFlow<List<Solicitud>>(emptyList())
+    val solicitudes = _solicitudesWeb.asStateFlow()
 
     fun solicitudesDeCuenta(lista: List<Solicitud>, cuenta: Cuenta?): List<Solicitud> {
         if (cuenta == null) return emptyList()
@@ -63,44 +68,96 @@ class UsuarioViewModel(
         listOfNotNull(nombre, correo, clave, direccion, aceptaTerminos, tipoColaborador, empresa, modalidad).isNotEmpty()
     private fun correoNormalizado(correo: String) = correo.trim().lowercase(Locale.ROOT)
 
-    suspend fun registrarCuenta(): Boolean {
-        if (_sesion.value != null || _registro.value.procesando) return false
+    suspend fun registrarCuenta(): Boolean{
+        if (_sesion.value != null || _registro.value.procesando) {return false}
         val datos = _registro.value
         val errores = erroresPersonales(datos, conClave = true)
-        _registro.update { it.copy(errores = errores, aviso = null) }
+
+        _registro.update {it.copy(errores = errores, aviso = null)}
         if (errores.tieneErrores()) return false
-        _registro.update { it.copy(procesando = true) }
+        _registro.update {it.copy(procesando = true)}
+
+        var creadaEnServidor = false
         return try {
             val correo = correoNormalizado(datos.correo)
-            if (cuentaRepository.buscarCuenta(correo) != null) {
-                _registro.update { it.copy(errores = it.errores.copy(correo = "Este correo ya está registrado")) }
-                false
+            //crea la cuenta y guarda la contraseña como hash en el server
+            cuentasWeb.registrarCuenta( nombre = datos.nombre, correo = correo, clave = datos.clave)
+            creadaEnServidor = true
+
+            //comprueba el acceso antes de abrir la sesión en androide
+            val remota = cuentasWeb.iniciarSesion(correo, datos.clave)
+            val existente = cuentaRepository.buscarCuenta(correo)
+
+            val cuenta = Cuenta(
+                id = existente?.id ?: UUID.randomUUID().toString(),
+                nombre = remota.nombre,
+                correo = remota.correo,
+                tipo = datos.tipoColaborador,
+                empresa = if (datos.tipoColaborador == "Empresa") {datos.empresa.trim()} else {""},
+                direccion = datos.direccion.trim(),
+                aceptaTerminos = datos.aceptaTerminos)
+
+            if (existente == null) {cuentaRepository.crearCuenta(cuenta)
+            } else {cuentaRepository.actualizarCuenta(cuenta)}
+
+            clavesTemporales[cuenta.id] = datos.clave
+            abrirSesion(cuenta, datos.clave)
+            cargarSolicitudes()
+            _registro.value = UsuarioUiState()
+            true
+        } catch (e: CancellationException) {
+            cuentasWeb.cerrarSesion()
+            throw e
+        } catch (e: HttpException) {
+            cuentasWeb.cerrarSesion()
+            if (creadaEnServidor) {
+                _registro.update {it.copy(aviso = "La cuenta se creó. Intenta iniciar sesión.")}
+            } else if (e.code() == 409) {
+                _registro.update {it.copy(errores = it.errores.copy(correo = "Este correo ya está registrado"))
+                }
             } else {
-                val cuenta = Cuenta(UUID.randomUUID().toString(), datos.nombre.trim(), correo,
-                    datos.tipoColaborador, if (datos.tipoColaborador == "Empresa") datos.empresa.trim() else "",
-                    direccion = datos.direccion.trim(), aceptaTerminos = datos.aceptaTerminos)
-                cuentaRepository.crearCuenta(cuenta)
-                clavesTemporales[cuenta.id] = datos.clave
-                abrirSesion(cuenta, datos.clave)
-                _registro.value = UsuarioUiState()
-                true
+                _registro.update {it.copy(aviso = "No se pudo completar el registro. Revisa los datos y usa una contraseña de al menos 6 caracteres.")}
             }
-        } catch (e: CancellationException) { throw e
-        } catch (e: Exception) {
-            _registro.update { it.copy(aviso = "No se pudo crear la cuenta. Intenta nuevamente.") }
             false
-        } finally { _registro.update { it.copy(procesando = false) } }
+
+        } catch (e: Exception) {
+            cuentasWeb.cerrarSesion()
+            _registro.update {
+                it.copy(aviso = if (creadaEnServidor) {"La cuenta se creó. Intenta iniciar sesión."
+                    } else {"No se pudo conectar con el servidor. Intenta nuevamente."})
+            }
+            false
+        } finally {_registro.update {it.copy(procesando = false)}}
     }
 
     suspend fun iniciarSesionSimulada(correo: String, clave: String): Boolean {
-        if (clave.isBlank()) return false
-        val cuenta = cuentaRepository.buscarCuenta(correoNormalizado(correo)) ?: return false
-        val conocida = clavesTemporales[cuenta.id]
-        if (conocida != null && conocida != clave) return false
-        // Igual que en el prototipo anterior, las contraseñas solo viven durante el proceso.
-        clavesTemporales[cuenta.id] = clave
-        abrirSesion(cuenta, clave)
-        return true
+        if (clave.isBlank() || _sesion.value != null) return false
+        return try {
+            //la contraseña se comprueba en el server
+            val remota = cuentasWeb.iniciarSesion(correo, clave)
+            val correoCuenta = correoNormalizado(remota.correo)
+
+            //conserva los datos locales como el id usado por el carritox
+            val existente = cuentaRepository.buscarCuenta(correoCuenta)
+            val cuenta = if (existente != null) {val actualizada = existente.copy(nombre = remota.nombre,correo = correoCuenta)
+                cuentaRepository.actualizarCuenta(actualizada)
+                actualizada
+            } else {
+                val nueva = Cuenta(id = UUID.randomUUID().toString(), nombre = remota.nombre, correo = correoCuenta, tipo = "Persona", empresa = "",
+                    direccion = "", aceptaTerminos = false)
+                cuentaRepository.crearCuenta(nueva)
+                nueva
+            }
+            clavesTemporales[cuenta.id] = clave
+            abrirSesion(cuenta, clave)
+            true
+        } catch (e: HttpException) {cuentasWeb.cerrarSesion()
+            if (e.code() == 401) {false
+            } else {throw e}
+        } catch (e: Exception) {
+            cuentasWeb.cerrarSesion()
+            throw e
+        }
     }
     private fun abrirSesion(cuenta: Cuenta, clave: String) {
         nuevaSolicitud()
@@ -109,10 +166,13 @@ class UsuarioViewModel(
             tipoCuenta = cuenta.tipo, empresa = cuenta.empresa)
     }
     fun cerrarSesion() {
+        cuentasWeb.cerrarSesion()
+        clavesTemporales.clear()
         nuevaSolicitud()
-        _sesion.value = null
-        _perfil.value = PerfilUiState()
-        _registro.value = UsuarioUiState()
+        _sesion.value= null
+        _perfil.value= PerfilUiState()
+        _registro.value= UsuarioUiState()
+        _solicitudesWeb.value= emptyList()
     }
     // Cada edición comienza con los datos guardados, sin arrastrar cambios descartados.
     fun prepararEdicionPerfil() {
@@ -135,35 +195,82 @@ class UsuarioViewModel(
     fun guardarPerfil() {
         val cuenta = _sesion.value ?: return
         val datos = _perfil.value
+
         if (datos.guardando) return
-        val errorNombre = if (datos.nombre.isBlank()) "Ingresa tu nombre" else null
-        val errorCorreo = if (!Patterns.EMAIL_ADDRESS.matcher(datos.correo.trim()).matches()) "Ingresa un correo válido" else null
-        val errorClave = if (datos.clave.isBlank()) "Ingresa tu contraseña" else null
-        val errorEmpresa = if (cuenta.tipo == "Empresa" && datos.empresa.isBlank()) "Ingresa el nombre de la empresa" else null
-        _perfil.update { it.copy(errorNombre = errorNombre, errorCorreo = errorCorreo, errorClave = errorClave,
-            errorEmpresa = errorEmpresa, mensaje = null) }
-        if (errorNombre != null || errorCorreo != null || errorClave != null || errorEmpresa != null) return
-        _perfil.update { it.copy(guardando = true) }
+
+        val errorNombre = if (datos.nombre.isBlank()) {"Ingresa tu nombre"} else null
+
+        val errorCorreo = if (!Patterns.EMAIL_ADDRESS.matcher(datos.correo.trim()).matches()) {"Ingresa un correo válido"
+        } else null
+
+        val errorClave = if (datos.clave.length < 6) {"La contraseña debe tener al menos 6 caracteres"} else null
+
+        val errorEmpresa = if (cuenta.tipo == "Empresa" && datos.empresa.isBlank()
+        ) {"Ingresa el nombre de la empresa"
+        } else null
+
+        _perfil.update {it.copy(errorNombre = errorNombre, errorCorreo = errorCorreo, errorClave = errorClave,
+                errorEmpresa = errorEmpresa, mensaje = null)
+        }
+        if (errorNombre != null || errorCorreo != null || errorClave != null || errorEmpresa != null) {
+            return
+        }
+
+        _perfil.update {it.copy(guardando = true)}
         viewModelScope.launch {
             try {
                 val correo = correoNormalizado(datos.correo)
                 val otraCuenta = cuentaRepository.buscarCuenta(correo)
+
                 if (otraCuenta != null && otraCuenta.id != cuenta.id) {
-                    _perfil.update { it.copy(errorCorreo = "Este correo ya está registrado") }
-                } else {
-                    val actualizada = cuenta.copy(nombre = datos.nombre.trim(), correo = correo,
-                        empresa = if (cuenta.tipo == "Empresa") datos.empresa.trim() else "")
+                    _perfil.update {it.copy(errorCorreo = "Este correo ya está registrado")}
+                    return@launch
+                }
+                //primero guarda nombre, correo y contraseña en postre
+                val remota = cuentasWeb.actualizarPerfil(nombre = datos.nombre, correo = correo, clave = datos.clave)
+                if (_sesion.value?.id != cuenta.id) return@launch
+                val actualizada = cuenta.copy(nombre = remota.nombre, correo = remota.correo, empresa = if (cuenta.tipo == "Empresa") {datos.empresa.trim()
+                    } else {
+                        ""
+                    }
+                )
+                _sesion.value = actualizada
+                clavesTemporales[cuenta.id] = datos.clave
+
+                _perfil.update {it.copy(nombre = actualizada.nombre, correo = actualizada.correo, empresa = actualizada.empresa, mensaje = "Datos guardados.")}
+                //actualiza los datos mostrados en el historial
+                _solicitudesWeb.update { lista -> lista.map { solicitud ->
+                        solicitud.copy(nombre = actualizada.nombre, correo = actualizada.correo, empresa = actualizada.empresa)}
+                }
+
+                //mantiene el mismo id local para mantener carrito y foto
+                try {
                     cuentaRepository.actualizarCuenta(actualizada)
-                    if (_sesion.value?.id == cuenta.id) {
-                        _sesion.value = actualizada
-                        clavesTemporales[cuenta.id] = datos.clave
-                        _perfil.update { it.copy(nombre = actualizada.nombre, correo = correo,
-                            empresa = actualizada.empresa, mensaje = "Datos guardados.") }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {_perfil.update {it.copy(mensaje = "Perfil guardado en el servidor. No se pudo actualizar la copia local.")
                     }
                 }
-            } catch (e: CancellationException) { throw e
-            } catch (e: Exception) { _perfil.update { it.copy(mensaje = "No se pudieron guardar los datos.") }
-            } finally { _perfil.update { it.copy(guardando = false) } }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HttpException) {
+                if (_sesion.value?.id == cuenta.id) {_perfil.update {
+                        when (e.code()) {
+                            409 -> it.copy(errorCorreo = "Este correo ya está registrado")
+                            401 -> it.copy(mensaje = "Vuelve a iniciar sesión para actualizar el perfil.")
+                            400 -> it.copy(mensaje = "Revisa los datos: nombre y correo hasta 120 caracteres, contraseña de al menos 6 caracteres y hasta 72 bytes.")
+                            else -> it.copy(mensaje = "No se pudieron guardar los cambios.")
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                if (_sesion.value?.id == cuenta.id) {
+                    _perfil.update {it.copy(mensaje = "No se pudo confirmar el guardado. Revisa la conexión.")}
+                }
+            } finally {
+                if (_sesion.value?.id == cuenta.id) {_perfil.update { it.copy(guardando = false)}
+                }
+            }
         }
     }
 
@@ -228,35 +335,75 @@ class UsuarioViewModel(
     }
     suspend fun guardarSolicitud(): Boolean {
         if (_estado.value.procesando || !validarFormulario()) return false
+
         val datos = _estado.value
-        val cuenta = if (datos.esInvitado) null else _sesion.value
-        _estado.update { it.copy(procesando = true) }
+        val cuenta = _sesion.value
+        val mensaje = datos.mensaje.trim()
+
+        if (mensaje.isEmpty() || mensaje.length > 1000) {
+            informarSolicitud("Escribe un mensaje de entre 1 y 1000 caracteres.")
+            return false
+        }
+
+        if (!datos.esInvitado && cuenta == null) return false
+
+        val idActual = idSolicitudActual
+        val idRemoto = idActual
+            ?.takeIf { it.startsWith("api_") }
+            ?.removePrefix("api_")
+            ?.toLongOrNull()
+
+        if (!datos.esInvitado && idActual != null && idRemoto == null) {
+            informarSolicitud("Esta solicitud antigua solo existe en el teléfono.")
+            return false
+        }
+
+        _estado.update { it.copy(procesando = true, aviso = null) }
+
         return try {
-            if (datos.esInvitado) {val mensaje = datos.mensaje.trim()
-                if (mensaje.isEmpty() || mensaje.length > 1000) {informarSolicitud("Escribe un mensaje de entre 1 y 1000 caracteres.")
-                    return false }
+            if (datos.esInvitado) {
                 val enviado = repositorioWeb.enviarSolicitudInvitado(datos.modalidad, mensaje)
-                if (!enviado) {informarSolicitud("No se pudo enviar la solicitud. Intenta nuevamente.")}
-                return enviado}
-            val id = idSolicitudActual ?: UUID.randomUUID().toString()
-            val solicitud = Solicitud(id, cuenta?.nombre ?: datos.nombre.trim(),
-                cuenta?.correo ?: correoNormalizado(datos.correo), cuenta?.direccion.orEmpty(), cuenta?.tipo ?: datos.tipoColaborador,
-                cuenta?.empresa ?: if (datos.tipoColaborador == "Empresa") datos.empresa.trim() else "",
-                datos.modalidad, datos.mensaje.trim(), cuenta?.aceptaTerminos ?: datos.aceptaTerminos,
-                if (idSolicitudActual == null) System.currentTimeMillis() else fechaSolicitudActual,
-                cuenta?.id, JSONArray(datos.imagenes).toString())
-            repository.guardarSolicitud(solicitud)
+                if (!enviado) {informarSolicitud("No se pudo enviar la solicitud.")}
+                return enviado
+            }
+
+            val cuentaActual = cuenta ?: return false
+            val remota = cuentasWeb.guardarSolicitud(id = idRemoto, modalidad = datos.modalidad, mensaje = mensaje)
+
+            //la solicitud ya se guardó en el servidor
+            if (_sesion.value?.id != cuentaActual.id) return true
+
+            val idLocal = "api_${remota.id}"
+            val fecha = fechaSolicitudActual ?: System.currentTimeMillis()
+            val solicitud = Solicitud(idLocal, cuentaActual.nombre, cuentaActual.correo, cuentaActual.direccion, cuentaActual.tipo,
+                cuentaActual.empresa, remota.modalidad, remota.mensaje, cuentaActual.aceptaTerminos, fecha, cuentaActual.id,
+                JSONArray(datos.imagenes).toString())
+
             val sobrantes = imagenesOriginales - datos.imagenes.toSet()
-            idSolicitudActual = id
-            fechaSolicitudActual = solicitud.fechaCreacion
+
+            idSolicitudActual = idLocal
+            fechaSolicitudActual = fecha
             imagenesOriginales = datos.imagenes
-            sobrantes.forEach { fotos.eliminar(it) }
+
+            _solicitudesWeb.update { lista -> listOf(solicitud) + lista.filterNot {it.id == idLocal}}
+
+            //roomcito conserva una copia con la fecha y las imágenes locales
+            //si hay un fallo de esta copia no invalida el guardado en postgre
+            try {
+                repository.guardarSolicitud(solicitud)
+                sobrantes.forEach { fotos.eliminar(it) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                informarSolicitud("Solicitud enviada. No se pudo actualizar la copia local.")
+            }
             true
-        } catch (e: CancellationException) { throw e
-        } catch (e: Exception) {
-            informarSolicitud("No se pudo guardar la solicitud. Intenta nuevamente.")
+
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {informarSolicitud("No se pudo guardar la solicitud. Intenta nuevamente.")
             false
-        } finally { _estado.update { it.copy(procesando = false) } }
+        } finally {_estado.update { it.copy(procesando = false) }}
     }
     fun editarSolicitud(id: String): Boolean {
         val cuenta = _sesion.value ?: return false
@@ -271,13 +418,67 @@ class UsuarioViewModel(
     }
     fun eliminarSolicitud(id: String) {
         val cuenta = _sesion.value ?: return
+
+        val solicitud = solicitudes.value.find {it.id == id && it.cuentaId == cuenta.id} ?: return
+        val idRemoto = id
+            .takeIf { it.startsWith("api_") }
+            ?.removePrefix("api_")
+            ?.toLongOrNull() ?: return
+
         viewModelScope.launch {
-            val solicitud = repository.buscarSolicitud(id) ?: return@launch
-            if (solicitud.cuentaId != cuenta.id) return@launch
-            repository.eliminarSolicitud(id)
-            imagenesDe(solicitud).forEach { fotos.eliminar(it) }
-            if (idSolicitudActual == id) nuevaSolicitud()
+            try {
+                //primero elimina en postgre
+                cuentasWeb.eliminarSolicitud(idRemoto)
+
+                if (_sesion.value?.id != cuenta.id) return@launch
+
+                _solicitudesWeb.update { lista ->lista.filterNot {it.id == id }}
+                if (idSolicitudActual == id) nuevaSolicitud()
+
+                //Luego limpia la copia del telef
+                try {
+                    repository.eliminarSolicitud(id)
+                    imagenesDe(solicitud).forEach { fotos.eliminar(it) }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    informarSolicitud("Solicitud eliminada del servidor. No se pudo limpiar la copia local."
+                    )
+                }
+
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {informarSolicitud("No se pudo eliminar la solicitud.")
+            }
         }
+    }
+    //consulta las solicitudes que pertenecen a la cuenta autenticada
+    fun cargarSolicitudes() {val cuenta = _sesion.value ?: return
+        viewModelScope.launch {
+            try {
+                val remotas = cuentasWeb.obtenerSolicitudes()
+                val lista = remotas.map { convertirSolicitud(it, cuenta) }
+
+                if (_sesion.value?.id == cuenta.id) {_solicitudesWeb.value = lista}
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (_sesion.value?.id == cuenta.id) {informarSolicitud("No se pudieron actualizar tus solicitudes. Intenta nuevamente.")}
+            }
+        }
+    }
+
+    //adapta la respuesta de la api al modelo que ya usa la pantalla
+    private suspend fun convertirSolicitud(remota: SolicitudCuentaWeb, cuenta: Cuenta
+    ): Solicitud {
+        val idLocal = "api_${remota.id}"
+        val guardada = repository.buscarSolicitud(idLocal)
+
+        return Solicitud(idLocal, cuenta.nombre, cuenta.correo, cuenta.direccion, cuenta.tipo, cuenta.empresa,
+            remota.modalidad, remota.mensaje, cuenta.aceptaTerminos, guardada?.fechaCreacion, cuenta.id,
+            if (guardada?.cuentaId == cuenta.id) {guardada.imagenes
+            } else { "[]" }
+        )
     }
     companion object {
         val modalidades = listOf("Donación", "Voluntariado", "Alianza empresarial", "Consulta por productos y servicios")

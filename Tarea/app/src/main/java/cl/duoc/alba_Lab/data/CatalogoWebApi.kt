@@ -13,6 +13,7 @@ data class ProductoWeb(val id: Int, val nombre: String, val descripcion: String,
 data class ProgramaWeb(val id: String, val nombre: String, val descripcion: String)
 data class SolicitudInvitadoWeb(val modalidad: String, val mensaje: String)
 interface CatalogoWebApi {
+
     @GET("api/productos")
     suspend fun obtenerProductos():List<ProductoWeb>
 

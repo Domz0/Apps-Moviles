@@ -46,16 +46,14 @@ fun AlbaScaffold(navController: NavController, usuarioViewModel: UsuarioViewMode
                         "Colaborar como invitado" to Screen.Invitado,
                         "Catálogo" to Screen.Catalogo,
                         "Nuestros programas" to Screen.QueHacemos,
-                        "Contacto" to Screen.Contacto,
-                        "Historial de solicitudes (debug)" to Screen.HistorialDebug
+                        "Contacto" to Screen.Contacto
                     // logueado
                     ) else listOf(
                         "Mi perfil" to Screen.Profile,
                         "Catálogo" to Screen.Catalogo,
                         "Carrito" to Screen.Carrito,
                         "Nuestros programas" to Screen.QueHacemos,
-                        "Contacto" to Screen.Contacto,
-                        "Historial de solicitudes (debug)" to Screen.HistorialDebug
+                        "Contacto" to Screen.Contacto
                     )
                     opciones.forEach { (titulo, pantalla) ->
                         NavigationDrawerItem(

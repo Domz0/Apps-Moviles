@@ -118,7 +118,6 @@ fun AppNavigation(temaViewModel: TemaViewModel, usuarioViewModel: UsuarioViewMod
                 if (sesion != null) SolicitudesScreen(navController, usuarioViewModel)
                 else LaunchedEffect(Unit) { navController.popBackStack(Screen.Home.route, false) }
             }
-            composable(Screen.HistorialDebug.route) { SolicitudesScreen(navController, usuarioViewModel, debug = true) }
         }
     }
 }

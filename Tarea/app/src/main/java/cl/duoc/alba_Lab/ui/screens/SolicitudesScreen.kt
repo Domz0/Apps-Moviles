@@ -17,56 +17,43 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun SolicitudesScreen(navController: NavController, viewModel: UsuarioViewModel, debug: Boolean = false) {
+fun SolicitudesScreen(navController: NavController, viewModel: UsuarioViewModel) {
     val todas by viewModel.solicitudes.collectAsState()
     val cuenta by viewModel.sesion.collectAsState()
     val estado by viewModel.estado.collectAsState()
-    LaunchedEffect(cuenta?.id, debug) {if (!debug && cuenta != null) {viewModel.cargarSolicitudes()}}
-    val solicitudes = if (debug) todas else viewModel.solicitudesDeCuenta(todas, cuenta)
+    LaunchedEffect(cuenta?.id) {if (cuenta != null) {viewModel.cargarSolicitudes()}}
+    val solicitudes = viewModel.solicitudesDeCuenta(todas, cuenta)
     val formatoFecha = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
     var solicitudAEliminar by remember { mutableStateOf<Solicitud?>(null) }
 
-    // separa entre toooodas las solicitudes y la de cada usuario
+    // muestra las solicitudes  de cada usuario
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        item { Text(if (debug) "Historial de solicitudes (debug)" else "Mis solicitudes", style = MaterialTheme.typography.headlineMedium) }
-        if (debug) {
-            item { Text("Historial de prueba") }
-        } else {
-            item {
-                Button(onClick = {
-                    viewModel.nuevaSolicitud()
-                    navController.navigate(Screen.CrearSolicitud.route) { launchSingleTop = true }
-                }, modifier = Modifier.fillMaxWidth()) { Text("Nueva solicitud") }
-            }
+        item { Text("Mis solicitudes", style = MaterialTheme.typography.headlineMedium) }
+        item {
+            Button(onClick = {
+                viewModel.nuevaSolicitud()
+                navController.navigate(Screen.CrearSolicitud.route) { launchSingleTop = true }
+            }, modifier = Modifier.fillMaxWidth()) { Text("Nueva solicitud") }
         }
-        if (!debug) {
-            item {Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    estado.aviso?.let { aviso -> Text(text = aviso, color = MaterialTheme.colorScheme.error)}
-                    TextButton(onClick = { viewModel.cargarSolicitudes() }) {Text("Actualizar solicitudes")}
-                }
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                estado.aviso?.let { aviso -> Text(text = aviso, color = MaterialTheme.colorScheme.error)}
+                TextButton(onClick = { viewModel.cargarSolicitudes() }) {Text("Actualizar solicitudes")}
             }
         }
         if (solicitudes.isEmpty()) item { Text("Todavía no hay solicitudes guardadas.") }
         items(solicitudes, key = { it.id }) { solicitud ->
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (debug) {
-                        Text(if (solicitud.cuentaId == null) "Invitado · ${solicitud.tipoColaborador}" else "Cuenta ${solicitud.tipoColaborador}",
-                            style = MaterialTheme.typography.labelMedium)
-                        Text(solicitud.nombre)
-                        Text(solicitud.correo, style = MaterialTheme.typography.bodySmall)
-                    }
                     Text("Tipo: ${solicitud.modalidad}", style = MaterialTheme.typography.titleMedium)
                     Text("Fecha: ${solicitud.fechaCreacion?.let { formatoFecha.format(Date(it)) } ?: "No registrada"}", style = MaterialTheme.typography.bodySmall)
                     Text("Mensaje: ${solicitud.mensaje.ifBlank { "Sin mensaje" }}")
                     ImagenesSolicitud(UsuarioViewModel.imagenesDe(solicitud))
-                    if (!debug) {
-                        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(onClick = {
-                                if (viewModel.editarSolicitud(solicitud.id)) navController.navigate(Screen.CrearSolicitud.route) { launchSingleTop = true }
-                            }, modifier = Modifier.fillMaxWidth()) { Text("Editar") }
-                            OutlinedButton(onClick = { solicitudAEliminar = solicitud }, modifier = Modifier.fillMaxWidth()) { Text("Eliminar") }
-                        }
+                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = {
+                            if (viewModel.editarSolicitud(solicitud.id)) navController.navigate(Screen.CrearSolicitud.route) { launchSingleTop = true }
+                        }, modifier = Modifier.fillMaxWidth()) { Text("Editar") }
+                        OutlinedButton(onClick = { solicitudAEliminar = solicitud }, modifier = Modifier.fillMaxWidth()) { Text("Eliminar") }
                     }
                 }
             }

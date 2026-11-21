@@ -69,7 +69,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel, usuario
                     iniciando = true
                     scope.launch {
                         try {
-                            if (usuarioViewModel.iniciarSesionSimulada(estado.correo, estado.clave)) {
+                            if (usuarioViewModel.iniciarSesion(estado.correo, estado.clave)) {
                                 viewModel.onClaveChange("")
                             } else {
                                 errorSesion = "Revisa el correo registrado y la contraseña."

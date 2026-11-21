@@ -130,7 +130,7 @@ class UsuarioViewModel(
         } finally {_registro.update {it.copy(procesando = false)}}
     }
 
-    suspend fun iniciarSesionSimulada(correo: String, clave: String): Boolean {
+    suspend fun iniciarSesion(correo: String, clave: String): Boolean {
         if (clave.isBlank() || _sesion.value != null) return false
         return try {
             //la contraseña se comprueba en el server

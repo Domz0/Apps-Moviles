@@ -1,6 +1,6 @@
 package cl.duoc.alba_Lab.viewmodel
 
-import android.util.Patterns
+import androidx.core.util.PatternsCompat
 import androidx.lifecycle.ViewModel
 import cl.duoc.alba_Lab.model.LoginUiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +25,7 @@ class LoginViewModel : ViewModel() {
         val correo = datos.correo.trim()
         val errorCorreo = when {
             correo.isBlank() -> "Ingresa tu correo electrónico"
-            !Patterns.EMAIL_ADDRESS.matcher(correo).matches() -> "Ingresa un correo válido"
+            !PatternsCompat.EMAIL_ADDRESS.matcher(correo).matches() -> "Ingresa un correo válido"
             else -> null
         }
         val errorClave = if (datos.clave.isBlank()) "Ingresa tu contraseña" else null

@@ -1,7 +1,7 @@
 package cl.duoc.alba_Lab.viewmodel
 
 import android.net.Uri
-import android.util.Patterns
+import androidx.core.util.PatternsCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.duoc.alba_Lab.data.ImagenStorage
@@ -24,10 +24,10 @@ import cl.duoc.alba_Lab.data.SolicitudCuentaWeb
 class UsuarioViewModel(
     private val repository: SolicitudRepository,
     private val cuentaRepository: CuentaRepository,
-    private val fotos: ImagenStorage
+    private val fotos: ImagenStorage,
+    private val repositorioWeb: CatalogoWebRepository = CatalogoWebRepository(AlbaLabApi.catalogo),
+    private val cuentasWeb: CuentasWebRepository = CuentasWebRepository()
 ) : ViewModel() {
-    private val repositorioWeb = CatalogoWebRepository(AlbaLabApi.catalogo)
-    private val cuentasWeb = CuentasWebRepository()
     private val _estado = MutableStateFlow(UsuarioUiState())
     val estado = _estado.asStateFlow()
     private val _registro = MutableStateFlow(UsuarioUiState())
@@ -57,7 +57,7 @@ class UsuarioViewModel(
 
     private fun erroresPersonales(datos: UsuarioUiState, conClave: Boolean) = UsuarioErrores(
         nombre = if (datos.nombre.isBlank()) "Ingresa tu nombre" else null,
-        correo = if (!Patterns.EMAIL_ADDRESS.matcher(datos.correo.trim()).matches()) "Ingresa un correo válido" else null,
+        correo = if (!PatternsCompat.EMAIL_ADDRESS.matcher(datos.correo.trim()).matches()) "Ingresa un correo válido" else null,
         clave = if (conClave && datos.clave.isBlank()) "Ingresa tu contraseña" else null,
         direccion = if (conClave && datos.direccion.isBlank()) "Ingresa tu dirección" else null,
         aceptaTerminos = if (!datos.aceptaTerminos) "Debes aceptar los términos y condiciones" else null,
@@ -200,7 +200,7 @@ class UsuarioViewModel(
 
         val errorNombre = if (datos.nombre.isBlank()) {"Ingresa tu nombre"} else null
 
-        val errorCorreo = if (!Patterns.EMAIL_ADDRESS.matcher(datos.correo.trim()).matches()) {"Ingresa un correo válido"
+        val errorCorreo = if (!PatternsCompat.EMAIL_ADDRESS.matcher(datos.correo.trim()).matches()) {"Ingresa un correo válido"
         } else null
 
         val errorClave = if (datos.clave.length < 6) {"La contraseña debe tener al menos 6 caracteres"} else null

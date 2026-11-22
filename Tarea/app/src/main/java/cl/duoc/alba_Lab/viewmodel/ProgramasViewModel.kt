@@ -16,8 +16,9 @@ sealed interface ProgramasEstado {
     data class Disponible(val programas: List<ProgramaWeb>): ProgramasEstado
 }
 
-class ProgramasViewModel: ViewModel(){
-    private val repositorio = CatalogoWebRepository(AlbaLabApi.catalogo)
+class ProgramasViewModel(
+    private val repositorio: CatalogoWebRepository = CatalogoWebRepository(AlbaLabApi.catalogo)
+): ViewModel(){
     private val _estado = MutableStateFlow<ProgramasEstado>(ProgramasEstado.Cargando)
     val estado = _estado.asStateFlow()
     init {cargar()}

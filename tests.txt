@@ -1,0 +1,5 @@
+para los test locales
+.\gradlew.bat :app:testDebugUnitTest
+
+para el celu
+.\gradlew.bat :app:connectedDebugAndroidTest

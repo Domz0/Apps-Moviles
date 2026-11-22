@@ -4,17 +4,17 @@ import okhttp3.Credentials
 import java.util.Locale
 
 //gestiona las cuentas y solicitudes mediante la apipi
-class CuentasWebRepository {
+class CuentasWebRepository(private val crearCliente: () -> ClienteCuentasWeb = { ClienteCuentasWeb() }) {
     private data class SesionRemota(val cliente: ClienteCuentasWeb, val autorizacion: String)
     private var sesion: SesionRemota? = null
     suspend fun registrarCuenta(nombre: String, correo: String, clave: String
     ): CuentaWeb {
-        val cliente = ClienteCuentasWeb()
+        val cliente = crearCliente()
         return cliente.api.registrar(RegistroCuentaWeb(nombre = nombre.trim(), correo = normalizarCorreo(correo), clave = clave))
     }
 
     suspend fun iniciarSesion(correo: String, clave: String): CuentaWeb{cerrarSesion()
-        val cliente = ClienteCuentasWeb()
+        val cliente = crearCliente()
         val autorizacion = Credentials.basic(normalizarCorreo(correo),clave, Charsets.UTF_8)
 
         //solo conserva el acceso si el server acepta las credenciales
